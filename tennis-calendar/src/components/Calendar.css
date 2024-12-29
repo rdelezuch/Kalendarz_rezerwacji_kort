@@ -1,0 +1,57 @@
+.greyed-out-day {
+    background-color: #e0e0e0 !important; /* Szare tło */
+    color: #a0a0a0 !important; /* Szary tekst */
+    opacity: 0.7; /* Przygaszenie */
+    pointer-events: none; /* Brak interakcji */
+}
+
+.fc-event {
+    display: flex;          /* Ustawienie flexbox */
+    justify-content: center; /* Wyśrodkowanie poziome */
+    align-items: center;    /* Wyśrodkowanie pionowe */
+    text-align: center;     /* Dodatkowe wyśrodkowanie tekstu */
+    font-size: 1em;         /* Dopasowanie rozmiaru czcionki */
+}
+
+.fc-daygrid-event {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 4px;
+    font-size: 0.9em;
+    color: white;
+    padding: 4px;
+}
+
+/* Wyłączenie pogrubienia dla tytułu wydarzenia */
+.fc-event-title {
+    font-weight: normal !important;
+}
+
+/* Pogrubienie godziny zdarzenia */
+.fc-event-time {
+    font-weight: bold !important;
+}
+
+/* Klasa dla zajętych godzin (czerwone tło) */
+.event-occupied {
+    background-color: rgb(243, 74, 74) !important;
+    color: white;
+    text-align: center;
+    border-radius: 4px;
+    border-color: rgb(243, 74, 74) !important;
+}
+
+/* Klasa dla dostępnych godzin (zielone tło) */
+.event-available {
+    background-color: rgb(41, 141, 41) !important;
+    color: white;
+    text-align: center;
+    border-radius: 4px;
+    border-color: rgb(41, 141, 41) !important;
+}
+
+.fc-daygrid-event-dot {
+    background-color: black !important; /* Zmienia kolor na czarny */
+    border-color: black !important;     /* Opcjonalnie zmienia obramowanie */
+}
