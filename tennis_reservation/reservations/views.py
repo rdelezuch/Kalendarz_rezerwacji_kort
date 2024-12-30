@@ -9,7 +9,17 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.dateparse import parse_datetime
 from django.db.models import Q
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.decorators import permission_classes
+from rest_framework.views import APIView
+from rest_framework import status
+from django.contrib.auth.models import User
+from rest_framework import serializers
+from django.contrib.auth import get_user_model
 import json
+from .serializers import UserSerializer
+
+User = get_user_model()
 
 @api_view(['GET'])
 def available_slots(request):
@@ -74,6 +84,7 @@ def weekly_slots(request):
     return Response(slots)
 
 @api_view(['POST'])
+#@permission_classes([IsAuthenticated])
 def check_availability(request):
     try:
         # Pobranie danych z żądania
@@ -127,6 +138,60 @@ def get_available_courts(request):
 
     return JsonResponse({"available_courts": list(available_courts.values("id", "name"))})
 
+class RegisterSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ['email', 'password', 'first_name', 'last_name']
+        extra_kwargs = {'password': {'write_only': True}}
+
+    def create(self, validated_data):
+        user = User.objects.create_user(
+            email=validated_data['email'],
+            password=validated_data['password'],
+            first_name=validated_data.get('first_name', ''),
+            last_name=validated_data.get('last_name', ''),
+        )
+        return user
+
+
+class RegisterView(APIView):
+    def post(self, request):
+        serializer = RegisterSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "Użytkownik zarejestrowany pomyślnie."}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+from rest_framework.permissions import IsAuthenticated
+
+@api_view(['GET'])
+#@permission_classes([IsAuthenticated])
+def user_data(request):
+    user = request.user
+    data = {
+        "email": user.email,
+        "first_name": user.first_name,
+        "last_name": user.last_name,
+    }
+    return Response(data)
+
+@api_view(['GET'])
+#@permission_classes([IsAuthenticated])
+def user_reservations(request):
+    reservations = Reservation.objects.filter(user=request.user)
+    data = [
+        {
+            "id": reservation.id,
+            "date": reservation.start_time.date(),
+            "start_time": reservation.start_time.time(),
+            "end_time": reservation.end_time.time(),
+            "court_name": reservation.court.name,
+        }
+        for reservation in reservations
+    ]
+    return Response(data)
+
+
 class CourtViewSet(viewsets.ModelViewSet):
     queryset = Court.objects.all()
     serializer_class = CourtSerializer
@@ -134,3 +199,7 @@ class CourtViewSet(viewsets.ModelViewSet):
 class ReservationViewSet(viewsets.ModelViewSet):
     queryset = Reservation.objects.all()
     serializer_class = ReservationSerializer
+
+class UserViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.all()
+    serializer_class = UserSerializer

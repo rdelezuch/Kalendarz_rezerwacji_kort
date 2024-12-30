@@ -42,7 +42,8 @@ INSTALLED_APPS = [
     'crispy_forms',
     'corsheaders',
     'reservations',
-    #'accounts',
+    'accounts',
+    'rest_framework_simplejwt',
 ]
 
 MIDDLEWARE = [
@@ -155,3 +156,32 @@ EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'tenisrezerwacja@gmail.com'
 EMAIL_HOST_PASSWORD = 'hlix pkke givl xxuo'
+
+# Wskazanie niestandardowego modelu użytkownika
+AUTH_USER_MODEL = 'accounts.CustomUser'
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+}
+
+#SIMPLE_JWT = {
+#    'AUTH_HEADER_TYPES': ('Bearer',),
+#    'USER_ID_FIELD': 'id',
+#    'USER_ID_CLAIM': 'user_id',
+#    'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
+#    'TOKEN_OBTAIN_SERIALIZER': 'path.to.CustomTokenObtainPairSerializer',
+#    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
+#    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+#}
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=5),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+    'ROTATE_REFRESH_TOKENS': False,
+    'BLACKLIST_AFTER_ROTATION': True,
+    'ALGORITHM': 'HS256',  # Upewnij się, że algorytm to HS256
+    'SIGNING_KEY': SECRET_KEY,  # Użyj swojego SECRET_KEY
+    'AUTH_HEADER_TYPES': ('Bearer',),
+}

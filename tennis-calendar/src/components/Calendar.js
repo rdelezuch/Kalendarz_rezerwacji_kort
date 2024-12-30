@@ -6,6 +6,7 @@ import interactionPlugin from "@fullcalendar/interaction";
 import axios from 'axios';
 import './Calendar.css';
 import Modal from "react-modal";
+import AuthModal from './AuthModal';
 
 // Styl modala
 const customStyles = {
@@ -45,6 +46,7 @@ const Calendar = () => {
     });
     const [availableCourts, setAvailableCourts] = useState([]);
     const [selectedEvent, setSelectedEvent] = useState(null);
+    const [authModalIsOpen, setAuthModalIsOpen] = useState(false);
 
     // Funkcja do pobierania wydarzeń
     const fetchEvents = () => {
@@ -61,13 +63,33 @@ const Calendar = () => {
             .catch(error => console.error("Błąd pobierania danych:", error));
     };
 
+    const [user, setUser] = useState(null); // Przechowuje dane zalogowanego użytkownika
+    const [loginModalOpen, setLoginModalOpen] = useState(false); // Kontrola modala logowania
+
+    // Funkcja do sprawdzania, czy użytkownik jest zalogowany
+    const checkUserLoggedIn = () => {
+        axios.get('http://127.0.0.1:8000/api/auth/user/')
+            .then(response => {
+                setUser(response.data); // Ustaw dane użytkownika, jeśli jest zalogowany
+            })
+            .catch(() => {
+                setUser(null); // Brak zalogowanego użytkownika
+            });
+    };
+
     // Pobieranie wydarzeń po załadowaniu komponentu
     useEffect(() => {
         fetchEvents();
+        checkUserLoggedIn();
     }, []);
 
     // Obsługa kliknięcia na istniejące wydarzenie
     const handleEventClick = (info) => {
+        if (!localStorage.getItem("access_token")) {
+            setAuthModalIsOpen(true);
+            return;
+        }
+
         if (info.event.title === "Wszystkie zajęte") {
             setSelectedEvent({
                 title: info.event.title,
@@ -172,7 +194,23 @@ const Calendar = () => {
             .catch((error) =>
                 console.error("Błąd podczas sprawdzania dostępności:", error)
             );
-    };    
+    };
+    
+    const handleLogin = (e) => {
+        e.preventDefault();
+    
+        const loginData = {
+            email: formData.email,
+            password: formData.password,
+        };
+    
+        axios.post('http://127.0.0.1:8000/api/auth/login/', loginData)
+            .then(response => {
+                setUser(response.data); // Ustaw dane użytkownika
+                setLoginModalOpen(false); // Zamknij modal logowania
+            })
+            .catch(() => alert("Błędne dane logowania."));
+    };
 
     return (
         <>
@@ -268,6 +306,21 @@ const Calendar = () => {
                     </form>
                 )}
             </Modal>
+            {/* Modal logowania */}
+            <Modal isOpen={loginModalOpen} onRequestClose={() => setLoginModalOpen(false)} style={customStyles} ariaHideApp={false}>
+                <h3>Zaloguj się</h3>
+                <form onSubmit={handleLogin}>
+                    <label>Email: <input type="email" name="email" onChange={handleInputChange} required /></label><br />
+                    <label>Hasło: <input type="password" name="password" onChange={handleInputChange} required /></label><br />
+                    <button type="submit">Zaloguj</button>
+                    <button type="button" onClick={() => setLoginModalOpen(false)}>Anuluj</button>
+                </form>
+            </Modal>
+            <AuthModal
+                isOpen={authModalIsOpen}
+                onClose={() => setAuthModalIsOpen(false)}
+                style={customStyles}
+            />
         </>
     );
 };

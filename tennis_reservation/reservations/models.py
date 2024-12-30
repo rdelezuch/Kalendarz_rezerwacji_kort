@@ -8,7 +8,6 @@ class Court(models.Model):
         return self.name
 
 class Reservation(models.Model):
-    #user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     court = models.ForeignKey(Court, on_delete=models.CASCADE)
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
