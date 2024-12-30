@@ -11,7 +11,9 @@ from reservations.views import (
     get_available_courts,
     RegisterView,
     user_data,
-    user_reservations
+    user_reservations,
+    update_user_data,
+    delete_reservation
 )
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from accounts.serializers import MyTokenObtainPairSerializer
@@ -34,5 +36,8 @@ urlpatterns = [
     path('api/register/', RegisterView.as_view(), name='register'),
     path('api/user-data/', user_data, name='user_data'),
     path('api/user-reservations/', user_reservations, name='user_reservations'),
+    path('api/update-user-data/', update_user_data, name='update_user_data'),
+    path('api/delete-reservation/<int:reservation_id>/', delete_reservation, name='delete_reservation'),
+
 
 ]
