@@ -14,11 +14,11 @@ class Reservation(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="reservations", null=True, blank=True)
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
-    first_name = models.CharField(max_length=100)
-    last_name = models.CharField(max_length=100)
-    user_email = models.EmailField()
-    phone = models.CharField(max_length=15, blank=True, null=True)
-    agreement = models.BooleanField(default=False)
+    #first_name = models.CharField(max_length=100)
+    #last_name = models.CharField(max_length=100)
+    #user_email = models.EmailField()
+    #phone = models.CharField(max_length=15, blank=True, null=True)
+    #agreement = models.BooleanField(default=False)
 
     def __str__(self):
-        return f"Rezerwacja {self.first_name} {self.last_name} - Kort {self.court}"
+        return f"Rezerwacja - Kort {self.court}"
