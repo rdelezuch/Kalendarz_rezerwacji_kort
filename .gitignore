@@ -27,3 +27,5 @@
 /tennis_reservation/tennis_reservation/__pycache__/settings.cpython-310.pyc
 /tennis_reservation/tennis_reservation/__pycache__/urls.cpython-310.pyc
 /tennis_reservation/tennis_reservation/__pycache__/wsgi.cpython-310.pyc
+/tennis_reservation/accounts/migrations/__pycache__/0003_customuser_phone.cpython-310.pyc
+/tennis_reservation/reservations/migrations/__pycache__/0004_remove_reservation_agreement_and_more.cpython-310.pyc
