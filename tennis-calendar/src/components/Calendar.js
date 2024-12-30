@@ -80,7 +80,7 @@ const Calendar = () => {
     // Pobieranie wydarzeń po załadowaniu komponentu
     useEffect(() => {
         fetchEvents();
-        checkUserLoggedIn();
+        //checkUserLoggedIn();
     }, []);
 
     // Obsługa kliknięcia na istniejące wydarzenie
@@ -152,9 +152,9 @@ const Calendar = () => {
     const handleSubmit = (e) => {
         e.preventDefault();
     
-        const formattedStartTime = new Date(`${formData.date}T${formData.startTime}`)
-        const formattedEndTime = new Date(`${formData.date}T${formData.endTime}`)
-
+        const formattedStartTime = new Date(`${formData.date}T${formData.startTime}`);
+        const formattedEndTime = new Date(`${formData.date}T${formData.endTime}`);
+    
         // Dane do wysłania
         const dataToSend = {
             start_time: formattedStartTime,
@@ -177,12 +177,17 @@ const Calendar = () => {
             })
             .then((response) => {
                 if (response.data.available) {
+                    // Wysłanie rezerwacji
                     axios
-                        .post("http://127.0.0.1:8000/api/reservations/", dataToSend)
+                        .post("http://127.0.0.1:8000/api/reservations/", dataToSend, {
+                            headers: {
+                                Authorization: `Bearer ${localStorage.getItem("access_token")}`, // Dodanie tokena użytkownika
+                            },
+                        })
                         .then(() => {
                             alert("Rezerwacja potwierdzona!");
                             setModalIsOpen(false);
-                            fetchEvents();
+                            fetchEvents(); // Odśwież wydarzenia
                         })
                         .catch((error) =>
                             console.error("Błąd podczas tworzenia rezerwacji:", error)
@@ -194,7 +199,7 @@ const Calendar = () => {
             .catch((error) =>
                 console.error("Błąd podczas sprawdzania dostępności:", error)
             );
-    };
+    };    
     
     const handleLogin = (e) => {
         e.preventDefault();

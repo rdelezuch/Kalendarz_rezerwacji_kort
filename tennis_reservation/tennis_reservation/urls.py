@@ -32,7 +32,7 @@ urlpatterns = [
     path('api/token/', TokenObtainPairView.as_view(serializer_class=MyTokenObtainPairSerializer), name='token_obtain_pair'),
     path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     path('api/register/', RegisterView.as_view(), name='register'),
-    path('user-data/', user_data, name='user_data'),
-    path('user-reservations/', user_reservations, name='user_reservations'),
+    path('api/user-data/', user_data, name='user_data'),
+    path('api/user-reservations/', user_reservations, name='user_reservations'),
 
 ]

@@ -178,18 +178,19 @@ def user_data(request):
 @api_view(['GET'])
 #@permission_classes([IsAuthenticated])
 def user_reservations(request):
-    reservations = Reservation.objects.filter(user=request.user)
-    data = [
+    user = request.user
+    reservations = Reservation.objects.filter(user=user)
+    serialized_reservations = [
         {
-            "id": reservation.id,
-            "date": reservation.start_time.date(),
-            "start_time": reservation.start_time.time(),
-            "end_time": reservation.end_time.time(),
-            "court_name": reservation.court.name,
+            "id": res.id,
+            "date": res.start_time.date(),
+            "start_time": res.start_time.time(),
+            "end_time": res.end_time.time(),
+            "court_name": res.court.name,
         }
-        for reservation in reservations
+        for res in reservations
     ]
-    return Response(data)
+    return Response(serialized_reservations)
 
 
 class CourtViewSet(viewsets.ModelViewSet):
@@ -199,6 +200,9 @@ class CourtViewSet(viewsets.ModelViewSet):
 class ReservationViewSet(viewsets.ModelViewSet):
     queryset = Reservation.objects.all()
     serializer_class = ReservationSerializer
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
