@@ -5,31 +5,11 @@ import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from "@fullcalendar/interaction";
 import axios from 'axios';
 import './Calendar.css';
+import '../App.css';
 import Modal from "react-modal";
 import AuthModal from './AuthModal';
+import { useAuth } from './AuthContext'; // Import kontekstu autoryzacji
 
-// Styl modala
-const customStyles = {
-    content: {
-      top: "50%",
-      left: "50%",
-      right: "auto",
-      bottom: "auto",
-      marginRight: "-50%",
-      transform: "translate(-50%, -50%)",
-      zIndex: 1050,
-      position: "fixed",
-      background: "#fff",
-      border: "1px solid #ccc",
-      borderRadius: "8px",
-      padding: "20px",
-    },
-    overlay: {
-      zIndex: 1040,
-      backgroundColor: "rgba(0, 0, 0, 0.5)", // Przyciemnia tło
-    }
-};
-  
 const Calendar = () => {
     const [events, setEvents] = useState([]);
     const [modalIsOpen, setModalIsOpen] = useState(false);
@@ -38,15 +18,11 @@ const Calendar = () => {
         court: "",
         startTime: "",
         endTime: "",
-        firstName: "",
-        lastName: "",
-        email: "",
-        phone: "",
-        agreement: false,
     });
     const [availableCourts, setAvailableCourts] = useState([]);
     const [selectedEvent, setSelectedEvent] = useState(null);
-    const [authModalIsOpen, setAuthModalIsOpen] = useState(false);
+
+    const { isAuthModalOpen, openAuthModal, isAuthenticated } = useAuth(); // Pobierz metody i stany z kontekstu
 
     // Funkcja do pobierania wydarzeń
     const fetchEvents = () => {
@@ -63,30 +39,15 @@ const Calendar = () => {
             .catch(error => console.error("Błąd pobierania danych:", error));
     };
 
-    const [user, setUser] = useState(null); // Przechowuje dane zalogowanego użytkownika
-    const [loginModalOpen, setLoginModalOpen] = useState(false); // Kontrola modala logowania
-
-    // Funkcja do sprawdzania, czy użytkownik jest zalogowany
-    const checkUserLoggedIn = () => {
-        axios.get('http://127.0.0.1:8000/api/auth/user/')
-            .then(response => {
-                setUser(response.data); // Ustaw dane użytkownika, jeśli jest zalogowany
-            })
-            .catch(() => {
-                setUser(null); // Brak zalogowanego użytkownika
-            });
-    };
-
-    // Pobieranie wydarzeń po załadowaniu komponentu
+    // Pobieranie wydarzeń i sprawdzanie stanu logowania po załadowaniu komponentu
     useEffect(() => {
         fetchEvents();
-        checkUserLoggedIn();
     }, []);
 
     // Obsługa kliknięcia na istniejące wydarzenie
     const handleEventClick = (info) => {
-        if (!localStorage.getItem("access_token")) {
-            setAuthModalIsOpen(true);
+        if (!isAuthenticated) {
+            openAuthModal(); // Otwórz modal logowania z kontekstu
             return;
         }
 
@@ -108,19 +69,14 @@ const Calendar = () => {
                 startTime: info.event.startStr.split("T")[1].slice(0, 5),
                 endTime: info.event.endStr.split("T")[1].slice(0, 5),
                 court: "",
-                firstName: "",
-                lastName: "",
-                email: "",
-                phone: "",
-                agreement: false,
             });
-    
+
             setSelectedEvent(null);
             setModalIsOpen(true);
         }
-    };    
+    };
 
-    // Pobieranie dostepnych kortów
+    // Pobieranie dostępnych kortów
     const fetchAvailableCourts = (startTime, endTime) => {
         axios.get("http://127.0.0.1:8000/api/get_available_courts/", {
             params: {
@@ -132,9 +88,9 @@ const Calendar = () => {
             setAvailableCourts(response.data.available_courts);
         })
         .catch(error => console.error("Błąd podczas pobierania dostępnych kortów:", error));
-    };    
+    };
 
-    // Zamykanie modala
+    // Zamykanie modala rezerwacji
     const closeModal = () => {
         setModalIsOpen(false);
         setSelectedEvent(null);
@@ -151,23 +107,18 @@ const Calendar = () => {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-    
-        const formattedStartTime = new Date(`${formData.date}T${formData.startTime}`)
-        const formattedEndTime = new Date(`${formData.date}T${formData.endTime}`)
 
-        // Dane do wysłania
+        const formattedStartTime = new Date(`${formData.date}T${formData.startTime}`);
+        const formattedEndTime = new Date(`${formData.date}T${formData.endTime}`);
+
         const dataToSend = {
             start_time: formattedStartTime,
             end_time: formattedEndTime,
             court: formData.court,
-            first_name: formData.firstName,
-            last_name: formData.lastName,
-            user_email: formData.email,
-            phone: formData.phone,
         };
-    
+
         console.log("Wysyłane dane:", dataToSend);
-    
+
         // Sprawdzenie dostępności terminu
         axios
             .post("http://127.0.0.1:8000/api/check_availability/", {
@@ -178,38 +129,28 @@ const Calendar = () => {
             .then((response) => {
                 if (response.data.available) {
                     axios
-                        .post("http://127.0.0.1:8000/api/reservations/", dataToSend)
+                        .post("http://127.0.0.1:8000/api/reservations/", dataToSend, {
+                            headers: {
+                                Authorization: `Bearer ${localStorage.getItem("access_token")}`,
+                            },
+                        })
                         .then(() => {
                             alert("Rezerwacja potwierdzona!");
                             setModalIsOpen(false);
                             fetchEvents();
                         })
-                        .catch((error) =>
-                            console.error("Błąd podczas tworzenia rezerwacji:", error)
-                        );
+                        .catch((error) => {
+                            console.error("Błąd podczas tworzenia rezerwacji:", error);
+                            alert("Błąd podczas tworzenia rezerwacji.");
+                        });
                 } else {
                     alert("Termin już zajęty!");
                 }
             })
-            .catch((error) =>
-                console.error("Błąd podczas sprawdzania dostępności:", error)
-            );
-    };
-    
-    const handleLogin = (e) => {
-        e.preventDefault();
-    
-        const loginData = {
-            email: formData.email,
-            password: formData.password,
-        };
-    
-        axios.post('http://127.0.0.1:8000/api/auth/login/', loginData)
-            .then(response => {
-                setUser(response.data); // Ustaw dane użytkownika
-                setLoginModalOpen(false); // Zamknij modal logowania
-            })
-            .catch(() => alert("Błędne dane logowania."));
+            .catch((error) => {
+                console.error("Błąd podczas sprawdzania dostępności:", error);
+                alert("Błąd podczas sprawdzania dostępności.");
+            });
     };
 
     return (
@@ -261,8 +202,8 @@ const Calendar = () => {
                 }}
             />
 
-            {/* Formularz modala */}
-            <Modal isOpen={modalIsOpen} onRequestClose={closeModal} style={customStyles} ariaHideApp={false}>
+            {/* Modal dla rezerwacji */}
+            <Modal isOpen={modalIsOpen} onRequestClose={closeModal} ariaHideApp={false}>
                 {selectedEvent ? (
                     <div>
                         <h2>Szczegóły Rezerwacji</h2>
@@ -286,20 +227,23 @@ const Calendar = () => {
                         </label><br />
                         <label>
                             Godzina Startu:
-                            <input type="time" name="startTime" value={formData.startTime} onChange={handleInputChange} required />
+                            <input
+                                type="time"
+                                name="startTime"
+                                value={formData.startTime}
+                                onChange={handleInputChange}
+                                required
+                            />
                         </label><br />
                         <label>
                             Godzina Końca:
-                            <input type="time" name="endTime" value={formData.endTime} onChange={handleInputChange} required />
-                        </label><br />
-                        <h3>Dane Klienta</h3>
-                        <label>Imię: <input type="text" name="firstName" onChange={handleInputChange} required /></label><br />
-                        <label>Nazwisko: <input type="text" name="lastName" onChange={handleInputChange} required /></label><br />
-                        <label>Email: <input type="email" name="email" onChange={handleInputChange} required /></label><br />
-                        <label>Telefon: <input type="tel" name="phone" onChange={handleInputChange} required /></label><br />
-                        <label>
-                            <input type="checkbox" name="agreement" checked={formData.agreement} onChange={handleInputChange} required />
-                            Akceptuję regulamin i RODO
+                            <input
+                                type="time"
+                                name="endTime"
+                                value={formData.endTime}
+                                onChange={handleInputChange}
+                                required
+                            />
                         </label><br />
                         <button type="submit">Rezerwuj</button>
                         <button type="button" onClick={closeModal}>Anuluj</button>
@@ -307,20 +251,7 @@ const Calendar = () => {
                 )}
             </Modal>
             {/* Modal logowania */}
-            <Modal isOpen={loginModalOpen} onRequestClose={() => setLoginModalOpen(false)} style={customStyles} ariaHideApp={false}>
-                <h3>Zaloguj się</h3>
-                <form onSubmit={handleLogin}>
-                    <label>Email: <input type="email" name="email" onChange={handleInputChange} required /></label><br />
-                    <label>Hasło: <input type="password" name="password" onChange={handleInputChange} required /></label><br />
-                    <button type="submit">Zaloguj</button>
-                    <button type="button" onClick={() => setLoginModalOpen(false)}>Anuluj</button>
-                </form>
-            </Modal>
-            <AuthModal
-                isOpen={authModalIsOpen}
-                onClose={() => setAuthModalIsOpen(false)}
-                style={customStyles}
-            />
+            <AuthModal />
         </>
     );
 };

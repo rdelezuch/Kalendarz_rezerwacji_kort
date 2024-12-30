@@ -10,6 +10,11 @@ class CourtSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class ReservationSerializer(serializers.ModelSerializer):
+    user_email = serializers.EmailField(source='user.email', read_only=True)
+    user_first_name = serializers.CharField(source='user.first_name', read_only=True)
+    user_last_name = serializers.CharField(source='user.last_name', read_only=True)
+    user_phone = serializers.CharField(source='user.phone', read_only=True)
+    
     class Meta:
         model = Reservation
         fields = '__all__'

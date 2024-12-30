@@ -141,7 +141,7 @@ def get_available_courts(request):
 class RegisterSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
-        fields = ['email', 'password', 'first_name', 'last_name']
+        fields = ['email', 'password', 'first_name', 'last_name', 'phone']
         extra_kwargs = {'password': {'write_only': True}}
 
     def create(self, validated_data):
@@ -150,6 +150,7 @@ class RegisterSerializer(serializers.ModelSerializer):
             password=validated_data['password'],
             first_name=validated_data.get('first_name', ''),
             last_name=validated_data.get('last_name', ''),
+            phone=validated_data.get('phone', ''),
         )
         return user
 
@@ -172,24 +173,86 @@ def user_data(request):
         "email": user.email,
         "first_name": user.first_name,
         "last_name": user.last_name,
+        "phone": user.phone,
     }
     return Response(data)
 
 @api_view(['GET'])
 #@permission_classes([IsAuthenticated])
 def user_reservations(request):
-    reservations = Reservation.objects.filter(user=request.user)
-    data = [
+    user = request.user
+    reservations = Reservation.objects.filter(user=user)
+    serialized_reservations = [
         {
-            "id": reservation.id,
-            "date": reservation.start_time.date(),
-            "start_time": reservation.start_time.time(),
-            "end_time": reservation.end_time.time(),
-            "court_name": reservation.court.name,
+            "id": res.id,
+            "date": res.start_time.date(),
+            "start_time": res.start_time.time(),
+            "end_time": res.end_time.time(),
+            "court_name": res.court.name,
         }
-        for reservation in reservations
+        for res in reservations
     ]
-    return Response(data)
+    return Response(serialized_reservations)
+
+@api_view(['PUT'])
+#@permission_classes([IsAuthenticated])
+def update_user_data(request):
+    user = request.user
+    data = request.data
+
+    user.first_name = data.get('first_name', user.first_name)
+    user.last_name = data.get('last_name', user.last_name)
+    user.email = data.get('email', user.email)
+    user.phone = data.get('phone', user.phone)
+
+    user.save()
+
+    return Response({
+        "message": "Dane użytkownika zaktualizowane pomyślnie.",
+        "user": {
+            "first_name": user.first_name,
+            "last_name": user.last_name,
+            "email": user.email,
+            "phone": user.phone,
+        }
+    }, status=status.HTTP_200_OK)
+
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from django.shortcuts import get_object_or_404
+
+@api_view(['DELETE'])
+#@permission_classes([IsAuthenticated])
+def delete_reservation(request, reservation_id):
+    user = request.user
+    reservation = get_object_or_404(Reservation, id=reservation_id, user=user)
+
+    reservation.delete()
+
+    return Response({"message": "Rezerwacja została usunięta."}, status=status.HTTP_200_OK)
+
+#@permission_classes([IsAuthenticated])
+def create_reservation(request):
+    user = request.user  # Użycie tokena do przypisania użytkownika
+    data = json.loads(request.body)
+    start_time = data.get("start_time")
+    end_time = data.get("end_time")
+    court_id = data.get("court")
+
+    if not all([start_time, end_time, court_id]):
+        return JsonResponse({"error": "Brak wymaganych danych"}, status=400)
+
+    try:
+        reservation = Reservation.objects.create(
+            user=user,  # Przypisanie użytkownika
+            start_time=start_time,
+            end_time=end_time,
+            court_id=court_id
+        )
+        return JsonResponse({"message": "Rezerwacja utworzona pomyślnie"}, status=201)
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=400)
+
 
 
 class CourtViewSet(viewsets.ModelViewSet):
@@ -199,6 +262,9 @@ class CourtViewSet(viewsets.ModelViewSet):
 class ReservationViewSet(viewsets.ModelViewSet):
     queryset = Reservation.objects.all()
     serializer_class = ReservationSerializer
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
 
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()

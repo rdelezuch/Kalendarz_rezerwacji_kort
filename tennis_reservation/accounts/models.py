@@ -1,6 +1,6 @@
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
-from django.contrib.auth.models import BaseUserManager
+from django.core.validators import RegexValidator
 
 class CustomUserManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
@@ -24,13 +24,24 @@ class CustomUserManager(BaseUserManager):
         return self.create_user(email, password, **extra_fields)
 
 class CustomUser(AbstractUser):
-    username = None  # Usuwamy pole username
-    email = models.EmailField(unique=True)  # Email jako unikalny identyfikator
+    username = None
+    email = models.EmailField(unique=True)
+    phone = models.CharField(
+        max_length=12,
+        validators=[
+            RegexValidator(
+                regex=r'^(\+48)?\d{9}$',
+                message="Numer telefonu musi być w formacie: '+48123456789' lub '123456789' (bez spacji i znaków specjalnych)."
+            )
+        ],
+        blank=False,  # Pole wymagane
+        null=False
+    )
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = []  # Brak dodatkowych wymaganych pól
+    REQUIRED_FIELDS = [] 
 
-    objects = CustomUserManager()  # Użycie niestandardowego menedżera
+    objects = CustomUserManager()
 
     def __str__(self):
         return self.email
