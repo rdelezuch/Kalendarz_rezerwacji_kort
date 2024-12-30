@@ -1,12 +1,31 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Modal from "react-modal";
 import axios from "axios";
-import { useAuth } from "./AuthContext"; // Importuj kontekst
+import { useAuth } from "./AuthContext";
 
 const AuthModal = () => {
-    const [isLogin, setIsLogin] = useState(true); // Przełącznik logowanie/rejestracja
-    const [formData, setFormData] = useState({ email: "", password: "", confirmPassword: "" });
-    const { isAuthModalOpen, closeAuthModal, login } = useAuth(); // Pobierz funkcje i stany z kontekstu
+    const [formData, setFormData] = useState({
+        email: "",
+        password: "",
+        confirmPassword: "",
+        firstName: "",
+        lastName: "",
+        phone: "",
+    });
+    const { isAuthModalOpen, closeAuthModal, login, authMode } = useAuth(); // Pobierz funkcje i stany z kontekstu
+    const isLogin = authMode === "login"; // Tryb logowania/rejestracji zależny od authMode
+
+    useEffect(() => {
+        // Wyczyść dane formularza przy otwarciu modala
+        setFormData({
+            email: "",
+            password: "",
+            confirmPassword: "",
+            firstName: "",
+            lastName: "",
+            phone: "",
+        });
+    }, [authMode, isAuthModalOpen]);
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -43,10 +62,13 @@ const AuthModal = () => {
                 .post("http://127.0.0.1:8000/api/register/", {
                     email: formData.email,
                     password: formData.password,
+                    first_name: formData.firstName,
+                    last_name: formData.lastName,
+                    phone: formData.phone,
                 })
                 .then(() => {
                     alert("Rejestracja pomyślna! Możesz się teraz zalogować.");
-                    setIsLogin(true); // Przełącz na logowanie
+                    closeAuthModal(); // Zamknij modal
                 })
                 .catch((error) => {
                     console.error("Błąd rejestracji:", error);
@@ -63,6 +85,42 @@ const AuthModal = () => {
         >
             <h2>{isLogin ? "Logowanie" : "Rejestracja"}</h2>
             <form onSubmit={handleSubmit}>
+                {!isLogin && (
+                    <>
+                        <label>
+                            Imię:
+                            <input
+                                type="text"
+                                name="firstName"
+                                value={formData.firstName}
+                                onChange={handleInputChange}
+                                required
+                            />
+                        </label><br/>
+                        <label>
+                            Nazwisko:
+                            <input
+                                type="text"
+                                name="lastName"
+                                value={formData.lastName}
+                                onChange={handleInputChange}
+                                required
+                            />
+                        </label><br/>
+                        <label>
+                            Telefon:
+                            <input
+                                type="tel"
+                                name="phone"
+                                value={formData.phone}
+                                onChange={handleInputChange}
+                                pattern="^(\+48)?\d{9}$" // Wzorzec dla polskich numerów
+                                title="Numer telefonu musi być w formacie: '123456789' lub '+48123456789'"
+                                required
+                            />
+                        </label><br/>
+                    </>
+                )}
                 <label>
                     Email:
                     <input
@@ -72,7 +130,7 @@ const AuthModal = () => {
                         onChange={handleInputChange}
                         required
                     />
-                </label>
+                </label><br/>
                 <label>
                     Hasło:
                     <input
@@ -82,24 +140,33 @@ const AuthModal = () => {
                         onChange={handleInputChange}
                         required
                     />
-                </label>
+                </label><br/>
                 {!isLogin && (
-                    <label>
-                        Potwierdź hasło:
-                        <input
-                            type="password"
-                            name="confirmPassword"
-                            value={formData.confirmPassword}
-                            onChange={handleInputChange}
-                            required
-                        />
-                    </label>
+                    <>
+                        <label>
+                            Potwierdź hasło:
+                            <input
+                                type="password"
+                                name="confirmPassword"
+                                value={formData.confirmPassword}
+                                onChange={handleInputChange}
+                                required
+                            />
+                        </label><br/>
+                        <label>
+                            <input
+                                type="checkbox"
+                                name="agreement"
+                                checked={formData.agreement}
+                                onChange={handleInputChange}
+                                required
+                            />
+                            Akceptuję regulamin oraz zgodę na RODO
+                        </label>
+                    </>
                 )}
-                <button type="submit">{isLogin ? "Zaloguj się" : "Zarejestruj się"}</button>
+                <br/><button type="submit">{isLogin ? "Zaloguj się" : "Zarejestruj się"}</button>
             </form>
-            <button onClick={() => setIsLogin(!isLogin)}>
-                {isLogin ? "Nie masz konta? Zarejestruj się" : "Masz już konto? Zaloguj się"}
-            </button>
             <button onClick={closeAuthModal}>Anuluj</button>
         </Modal>
     );

@@ -5,6 +5,7 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
     const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem("access_token"));
     const [isAuthModalOpen, setAuthModalOpen] = useState(false);
+    const [authMode, setAuthMode] = useState("login"); // "login" lub "register"
 
     const login = () => {
         setIsAuthenticated(true);
@@ -17,7 +18,11 @@ export const AuthProvider = ({ children }) => {
         setIsAuthenticated(false);
     };
 
-    const openAuthModal = () => setAuthModalOpen(true);
+    const openAuthModal = (mode = "login") => {
+        setAuthMode(mode); // Ustaw tryb logowania lub rejestracji
+        setAuthModalOpen(true);
+    };
+
     const closeAuthModal = () => setAuthModalOpen(false);
 
     return (
@@ -27,6 +32,7 @@ export const AuthProvider = ({ children }) => {
                 login,
                 logout,
                 isAuthModalOpen,
+                authMode,
                 openAuthModal,
                 closeAuthModal,
             }}
