@@ -8,7 +8,7 @@ import './Calendar.css';
 import '../App.css';
 import Modal from "react-modal";
 import AuthModal from './AuthModal';
-import { useAuth } from './AuthContext'; // Import kontekstu autoryzacji
+import { useAuth } from './AuthContext';
 
 const Calendar = () => {
     const [events, setEvents] = useState([]);
@@ -18,11 +18,12 @@ const Calendar = () => {
         court: "",
         startTime: "",
         endTime: "",
+        notes: "",
     });
     const [availableCourts, setAvailableCourts] = useState([]);
     const [selectedEvent, setSelectedEvent] = useState(null);
 
-    const { isAuthModalOpen, openAuthModal, isAuthenticated } = useAuth(); // Pobierz metody i stany z kontekstu
+    const { isAuthModalOpen, openAuthModal, isAuthenticated } = useAuth();
 
     // Funkcja do pobierania wydarzeń
     const fetchEvents = () => {
@@ -98,10 +99,10 @@ const Calendar = () => {
 
     // Obsługa formularza rezerwacji
     const handleInputChange = (e) => {
-        const { name, value, type, checked } = e.target;
+        const { name, value } = e.target;
         setFormData({
             ...formData,
-            [name]: type === "checkbox" ? checked : value,
+            [name]: value,
         });
     };
 
@@ -115,11 +116,9 @@ const Calendar = () => {
             start_time: formattedStartTime,
             end_time: formattedEndTime,
             court: formData.court,
+            notes: formData.notes,
         };
 
-        console.log("Wysyłane dane:", dataToSend);
-
-        // Sprawdzenie dostępności terminu
         axios
             .post("http://127.0.0.1:8000/api/check_availability/", {
                 start_time: formattedStartTime,
@@ -134,8 +133,27 @@ const Calendar = () => {
                                 Authorization: `Bearer ${localStorage.getItem("access_token")}`,
                             },
                         })
-                        .then(() => {
+                        .then((res) => {
                             alert("Rezerwacja potwierdzona!");
+                            const reservationDetails = `
+                                Data: ${formData.date}
+                                Godzina: ${formData.startTime} - ${formData.endTime}
+                                Kort: ${formData.court}
+                                Notatki: ${formData.notes || "Brak"}
+                            `;
+                            axios
+                                .post("http://127.0.0.1:8000/api/send-reservation-email/", {
+                                    email: localStorage.getItem("user_email"),
+                                    reservation_details: reservationDetails,
+                                })
+                                .then(() => {
+                                    alert("E-mail z potwierdzeniem został wysłany!");
+                                })
+                                .catch((error) => {
+                                    console.error("Błąd podczas wysyłania e-maila:", error);
+                                    alert("Wystąpił błąd podczas wysyłania potwierdzenia e-mail.");
+                                });
+
                             setModalIsOpen(false);
                             fetchEvents();
                         })
@@ -243,6 +261,16 @@ const Calendar = () => {
                                 value={formData.endTime}
                                 onChange={handleInputChange}
                                 required
+                            />
+                        </label><br />
+                        <label>
+                            Notatki (opcjonalne, max 150 znaków):
+                            <br /><textarea
+                                name="notes"
+                                value={formData.notes}
+                                onChange={handleInputChange}
+                                maxLength="150"
+                                placeholder="Dodaj notatki do rezerwacji..."
                             />
                         </label><br />
                         <button type="submit">Rezerwuj</button>

@@ -16,6 +16,9 @@ from rest_framework import status
 from django.contrib.auth.models import User
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
+from django.shortcuts import get_object_or_404
+from django.core.mail import send_mail
+from django.conf import settings
 import json
 from .serializers import UserSerializer
 
@@ -163,8 +166,6 @@ class RegisterView(APIView):
             return Response({"message": "Użytkownik zarejestrowany pomyślnie."}, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-from rest_framework.permissions import IsAuthenticated
-
 @api_view(['GET'])
 #@permission_classes([IsAuthenticated])
 def user_data(request):
@@ -189,6 +190,7 @@ def user_reservations(request):
             "start_time": res.start_time.time(),
             "end_time": res.end_time.time(),
             "court_name": res.court.name,
+            "notes": res.notes,
         }
         for res in reservations
     ]
@@ -217,10 +219,6 @@ def update_user_data(request):
         }
     }, status=status.HTTP_200_OK)
 
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
-from django.shortcuts import get_object_or_404
-
 @api_view(['DELETE'])
 #@permission_classes([IsAuthenticated])
 def delete_reservation(request, reservation_id):
@@ -231,28 +229,25 @@ def delete_reservation(request, reservation_id):
 
     return Response({"message": "Rezerwacja została usunięta."}, status=status.HTTP_200_OK)
 
-#@permission_classes([IsAuthenticated])
-def create_reservation(request):
-    user = request.user  # Użycie tokena do przypisania użytkownika
+@api_view(['POST'])
+def send_reservation_email(request):
     data = json.loads(request.body)
-    start_time = data.get("start_time")
-    end_time = data.get("end_time")
-    court_id = data.get("court")
+    recipient_email = data.get("email")
+    reservation_details = data.get("reservation_details")
 
-    if not all([start_time, end_time, court_id]):
-        return JsonResponse({"error": "Brak wymaganych danych"}, status=400)
+    if not recipient_email or not reservation_details:
+        return JsonResponse({"error": "Nie podano wszystkich wymaganych danych"}, status=400)
 
     try:
-        reservation = Reservation.objects.create(
-            user=user,  # Przypisanie użytkownika
-            start_time=start_time,
-            end_time=end_time,
-            court_id=court_id
+        send_mail(
+            'Potwierdzenie rezerwacji',
+            f'Twoja rezerwacja została potwierdzona:\n{reservation_details}',
+            settings.EMAIL_HOST_USER,
+            [recipient_email],
         )
-        return JsonResponse({"message": "Rezerwacja utworzona pomyślnie"}, status=201)
+        return JsonResponse({"message": "E-mail potwierdzający wysłany pomyślnie"}, status=200)
     except Exception as e:
-        return JsonResponse({"error": str(e)}, status=400)
-
+        return JsonResponse({"error": f"Błąd podczas wysyłania e-maila: {str(e)}"}, status=500)
 
 
 class CourtViewSet(viewsets.ModelViewSet):
