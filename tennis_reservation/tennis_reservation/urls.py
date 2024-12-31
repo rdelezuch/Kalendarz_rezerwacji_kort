@@ -13,7 +13,8 @@ from reservations.views import (
     user_data,
     user_reservations,
     update_user_data,
-    delete_reservation
+    delete_reservation,
+    send_reservation_email,
 )
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from accounts.serializers import MyTokenObtainPairSerializer
@@ -38,6 +39,5 @@ urlpatterns = [
     path('api/user-reservations/', user_reservations, name='user_reservations'),
     path('api/update-user-data/', update_user_data, name='update_user_data'),
     path('api/delete-reservation/<int:reservation_id>/', delete_reservation, name='delete_reservation'),
-
-
+    path('api/send-reservation-email/', send_reservation_email, name='send_reservation_email'),
 ]

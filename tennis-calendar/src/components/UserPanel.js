@@ -11,6 +11,8 @@ const UserPanel = () => {
     email: "",
     phone: "",
   });
+  const [editingNote, setEditingNote] = useState(null); // Rezerwacja do edycji notatki
+  const [editedNote, setEditedNote] = useState(""); // Przechowuje treść notatki
 
   useEffect(() => {
     // Pobierz dane użytkownika
@@ -81,6 +83,26 @@ const UserPanel = () => {
           alert("Wystąpił błąd podczas usuwania rezerwacji.");
         });
     }
+  };
+
+  const saveNote = (reservationId) => {
+    axios
+      .patch(
+        `http://127.0.0.1:8000/api/reservations/${reservationId}/`,
+        { notes: editedNote },
+        {
+          headers: { Authorization: `Bearer ${localStorage.getItem("access_token")}` },
+        }
+      )
+      .then(() => {
+        alert("Notatka zaktualizowana!");
+        setEditingNote(null); // Zakończ edycję
+        fetchReservations(); // Odśwież dane
+      })
+      .catch((error) => {
+        console.error("Błąd podczas aktualizacji notatki:", error);
+        alert("Nie udało się zaktualizować notatki.");
+      });
   };
 
   return (
@@ -193,10 +215,69 @@ const UserPanel = () => {
           {reservations.map((reservation) => (
             <li key={reservation.id}>
               <strong>{reservation.date} {reservation.start_time}-{reservation.end_time}</strong> | Kort: {reservation.court_name}
+              <div>
+                <strong>Notatki:</strong>{" "}
+                {editingNote === reservation.id ? (
+                  <>
+                    <textarea
+                      value={editedNote}
+                      onChange={(e) => setEditedNote(e.target.value)}
+                      maxLength="150"
+                      style={{ width: "100%", height: "50px" }}
+                    />
+                    <button
+                      onClick={() => saveNote(reservation.id)}
+                      style={{
+                        margin: "5px",
+                        padding: "8px 12px",
+                        backgroundColor: "#28a745",
+                        color: "#fff",
+                        border: "none",
+                        borderRadius: "5px",
+                      }}
+                    >
+                      Zapisz
+                    </button>
+                    <button
+                      onClick={() => setEditingNote(null)}
+                      style={{
+                        margin: "5px",
+                        padding: "8px 12px",
+                        backgroundColor: "#dc3545",
+                        color: "#fff",
+                        border: "none",
+                        borderRadius: "5px",
+                      }}
+                    >
+                      Anuluj
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    {reservation.notes}
+                    <button
+                      onClick={() => {
+                        setEditingNote(reservation.id);
+                        setEditedNote(reservation.notes);
+                      }}
+                      style={{
+                        marginLeft: "10px",
+                        padding: "5px 10px",
+                        backgroundColor: "#007bff",
+                        color: "#fff",
+                        border: "none",
+                        borderRadius: "5px",
+                      }}
+                    >
+                      Edytuj
+                    </button>
+                  </>
+                )}
+              </div>
               <button
                 onClick={() => handleDeleteReservation(reservation.id)}
                 style={{
-                  marginLeft: "10px",
+                  marginTop: "5px",
                   padding: "5px 10px",
                   backgroundColor: "#dc3545",
                   color: "#fff",
