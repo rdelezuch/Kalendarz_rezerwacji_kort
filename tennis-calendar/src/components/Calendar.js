@@ -53,12 +53,12 @@ const Calendar = () => {
         }
 
         if (info.event.title === "Wszystkie zajęte") {
-            setSelectedEvent({
-                title: info.event.title,
-                start: info.event.startStr,
-                end: info.event.endStr,
-            });
-            setModalIsOpen(true);
+            // setSelectedEvent({
+            //     title: info.event.title,
+            //     start: info.event.startStr,
+            //     end: info.event.endStr,
+            // });
+            // setModalIsOpen(true);
         } else if (info.event.title === "Dostępne korty") {
             const startTime = info.event.startStr;
             const endTime = info.event.endStr;
@@ -110,7 +110,8 @@ const Calendar = () => {
         e.preventDefault();
 
         const formattedStartTime = new Date(`${formData.date}T${formData.startTime}`);
-        const formattedEndTime = new Date(`${formData.date}T${formData.endTime}`);
+        const durationHours = parseInt(formData.duration); // Pobierz liczbę godzin z pola `duration`
+        const formattedEndTime = new Date(formattedStartTime.getTime() + durationHours * 60 * 60 * 1000);
 
         const dataToSend = {
             start_time: formattedStartTime,
@@ -244,24 +245,26 @@ const Calendar = () => {
                             </select>
                         </label><br />
                         <label>
-                            Godzina Startu:
-                            <input
-                                type="time"
-                                name="startTime"
-                                value={formData.startTime}
-                                onChange={handleInputChange}
-                                required
-                            />
+                            Godzina Startu: {formData.startTime}
                         </label><br />
                         <label>
-                            Godzina Końca:
-                            <input
-                                type="time"
-                                name="endTime"
-                                value={formData.endTime}
-                                onChange={handleInputChange}
+                            Czas wynajmu(h):
+                            <select
+                                name="duration"
+                                value={formData.duration}
+                                onChange={(e) =>
+                                    setFormData({
+                                        ...formData,
+                                        duration: e.target.value,
+                                    })
+                                }
                                 required
-                            />
+                            >
+                                <option value="">Wybierz czas trwania</option>
+                                <option value="1">1 godzina</option>
+                                <option value="2">2 godziny</option>
+                                <option value="3">3 godziny</option>
+                            </select>
                         </label><br />
                         <label>
                             Notatki (opcjonalne, max 150 znaków):
