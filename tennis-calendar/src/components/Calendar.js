@@ -20,30 +20,63 @@ const Calendar = () => {
         endTime: "",
         notes: "",
     });
+    const [allCourts, setAllCourts] = useState([]);
     const [availableCourts, setAvailableCourts] = useState([]);
+    const [selectedCourt, setSelectedCourt] = useState("all");
     const [selectedEvent, setSelectedEvent] = useState(null);
 
     const { isAuthModalOpen, openAuthModal, isAuthenticated } = useAuth();
 
     // Funkcja do pobierania wydarzeń
-    const fetchEvents = () => {
-        axios.get('http://127.0.0.1:8000/api/weekly_slots/')
-            .then(response => {
-                const formattedEvents = response.data.map(slot => ({
-                    title: slot.status === "full" ? "Wszystkie zajęte" : "Dostępne korty",
-                    start: slot.start,
-                    end: slot.end,
-                    classNames: slot.status === "full" ? "event-occupied" : "event-available"
-                }));
-                setEvents(formattedEvents);
-            })
-            .catch(error => console.error("Błąd pobierania danych:", error));
+    const fetchEvents = (selectedCourt) => {
+        axios.get("http://127.0.0.1:8000/api/weekly_slots/", {
+            params: selectedCourt !== "all" ? { court: selectedCourt } : {},
+        })
+        .then(response => {
+            const formattedEvents = response.data.map(slot => ({
+                title: slot.status === "full" 
+                    ? (selectedCourt !== "all" ? "Kort zajęty" : "Wszystkie zajęte") 
+                    : (selectedCourt !== "all" ? "Kort dostępny" : "Dostępne korty"),
+                start: slot.start,
+                end: slot.end,
+                classNames: slot.status === "full" ? "event-occupied" : "event-available"
+            }));
+            setEvents(formattedEvents);
+        })
+        .catch(error => console.error("Błąd pobierania danych:", error));
     };
 
     // Pobieranie wydarzeń i sprawdzanie stanu logowania po załadowaniu komponentu
     useEffect(() => {
-        fetchEvents();
+        fetchAllCourts();
+        fetchEvents("all");
+        const buttons = document.querySelectorAll('.fc-toolbar .fc-button');
+        const allCourtsButton = Array.from(buttons).find((button) => button.textContent === 'Wszystkie Korty');
+        if (allCourtsButton) {
+            allCourtsButton.classList.add('active-button');
+        }
     }, []);
+
+    // Obsługa zmiany wybranego kortu
+    const handleCourtChange = (selected) => {
+        setSelectedCourt(selected); // Ustaw nowy wybrany kort
+        fetchEvents(selected); // Pobierz wydarzenia dla wybranego kortu
+    
+        // Zmiana stylu aktywnego przycisku
+        const buttons = document.querySelectorAll('.fc-toolbar .fc-button');
+        buttons.forEach((button) => {
+            button.classList.remove('active-button');
+        });
+    
+        const activeButton = Array.from(buttons).find((button) =>
+            button.textContent === (selected === 'all' ? 'Wszystkie Korty' : allCourts.find(court => court.id === selected)?.name)
+        );
+        if (activeButton) {
+            activeButton.classList.add('active-button');
+        }
+    };
+    
+    
 
     // Obsługa kliknięcia na istniejące wydarzenie
     const handleEventClick = (info) => {
@@ -52,14 +85,9 @@ const Calendar = () => {
             return;
         }
 
-        if (info.event.title === "Wszystkie zajęte") {
-            // setSelectedEvent({
-            //     title: info.event.title,
-            //     start: info.event.startStr,
-            //     end: info.event.endStr,
-            // });
-            // setModalIsOpen(true);
-        } else if (info.event.title === "Dostępne korty") {
+        if (info.event.title === "Kort zajęty" || info.event.title === "Wszystkie zajęte") {
+            alert("Wybrany termin jest zajęty.");
+        } else if (info.event.title === "Dostępne korty" || info.event.title === "Kort dostępny") {
             const startTime = info.event.startStr;
             const endTime = info.event.endStr;
 
@@ -69,7 +97,8 @@ const Calendar = () => {
                 date: info.event.startStr.split("T")[0],
                 startTime: info.event.startStr.split("T")[1].slice(0, 5),
                 endTime: info.event.endStr.split("T")[1].slice(0, 5),
-                court: "",
+                court: selectedCourt === "all" ? "" : selectedCourt,
+                notes: "",
             });
 
             setSelectedEvent(null);
@@ -77,7 +106,16 @@ const Calendar = () => {
         }
     };
 
-    // Pobieranie dostępnych kortów
+    // Pobieranie listy wszystkich kortów
+    const fetchAllCourts = () => {
+        axios.get("http://127.0.0.1:8000/api/get-all-courts/")
+            .then(response => {
+                setAllCourts(response.data);
+            })
+            .catch(error => console.error("Błąd podczas pobierania wszystkich kortów:", error));
+    };
+
+    // Pobieranie dostępnych kortów dla przedziałów czasowych
     const fetchAvailableCourts = (startTime, endTime) => {
         axios.get("http://127.0.0.1:8000/api/get_available_courts/", {
             params: {
@@ -110,7 +148,7 @@ const Calendar = () => {
         e.preventDefault();
 
         const formattedStartTime = new Date(`${formData.date}T${formData.startTime}`);
-        const durationHours = parseInt(formData.duration); // Pobierz liczbę godzin z pola `duration`
+        const durationHours = parseInt(formData.duration);
         const formattedEndTime = new Date(formattedStartTime.getTime() + durationHours * 60 * 60 * 1000);
 
         const dataToSend = {
@@ -134,7 +172,7 @@ const Calendar = () => {
                                 Authorization: `Bearer ${localStorage.getItem("access_token")}`,
                             },
                         })
-                        .then((res) => {
+                        .then(() => {
                             alert("Rezerwacja potwierdzona!");
                             const reservationDetails = `
                                 Data: ${formData.date}
@@ -156,7 +194,7 @@ const Calendar = () => {
                                 });
 
                             setModalIsOpen(false);
-                            fetchEvents();
+                            fetchEvents(selectedCourt);
                         })
                         .catch((error) => {
                             console.error("Błąd podczas tworzenia rezerwacji:", error);
@@ -174,6 +212,24 @@ const Calendar = () => {
 
     return (
         <>
+            {/* Rozwijana lista z wyborem kortu */}
+            {/* <div style={{ marginBottom: "20px" }}>
+                <label htmlFor="court-select">Wybierz kort:</label>
+                <select
+                    id="court-select"
+                    value={selectedCourt}
+                    onChange={handleCourtChange}
+                    style={{ marginLeft: "10px", padding: "8px", borderRadius: "5px" }}
+                >
+                    <option value="all">Wszystkie korty</option>
+                    {allCourts.map((court) => (
+                        <option key={court.id} value={court.id}>
+                            {court.name}
+                        </option>
+                    ))}
+                </select>
+            </div> */}
+
             <FullCalendar
                 plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
                 locale="pl"
@@ -190,11 +246,29 @@ const Calendar = () => {
                 slotLabelInterval="01:00"
                 height="auto"
                 aspectRatio={1.5}
-                headerToolbar={{
+                customButtons={{
+                    allCourts: {
+                      text: 'Wszystkie Korty',
+                      click: () => handleCourtChange('all'),
+                    },
+                    court1: {
+                      text: allCourts[0]?.name || 'Kort 1',
+                      click: () => handleCourtChange(allCourts[0]?.id),
+                    },
+                    court2: {
+                      text: allCourts[1]?.name || 'Kort 2',
+                      click: () => handleCourtChange(allCourts[1]?.id),
+                    },
+                    court3: {
+                        text: allCourts[2]?.name || 'Kort 3',
+                        click: () => handleCourtChange(allCourts[2]?.id),
+                      },
+                  }}
+                  headerToolbar={{
                     left: 'prev,next today',
                     center: 'title',
-                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
-                }}
+                    right: 'allCourts,court1,court2,court3 dayGridMonth,timeGridWeek,timeGridDay',
+                  }}
                 buttonText={{
                     today: 'Dziś',
                     month: 'Miesiąc',
@@ -215,9 +289,12 @@ const Calendar = () => {
                 expandRows={true}
                 eventClick={handleEventClick}
                 eventClassNames={(arg) => {
-                    return arg.event.title === "Wszystkie zajęte"
-                        ? ['event-occupied']
-                        : ['event-available'];
+                    if (arg.event.title === "Kort zajęty" || arg.event.title === "Wszystkie zajęte") {
+                        return ["event-occupied"];
+                    } else if (arg.event.title === "Kort dostępny" || arg.event.title === "Dostępne korty") {
+                        return ["event-available"];
+                    }
+                    return [];
                 }}
             />
 
@@ -237,18 +314,20 @@ const Calendar = () => {
                         <label>Data: {formData.date}</label><br />
                         <label>
                             Kort:
-                            <select name="court" value={formData.court} onChange={handleInputChange} required>
+                            {selectedCourt === 'all'
+                            ? (<select name="court" value={formData.court} onChange={handleInputChange} required>
                                 <option value="">Wybierz kort</option>
                                 {availableCourts.map(court => (
-                                    <option key={court.id} value={court.id}>{court.name}</option>
+                                    <option key={court.id} value={court.id}>{court.id}</option>
                                 ))}
-                            </select>
+                            </select>)
+                            : (<label> {selectedCourt}</label>)}
                         </label><br />
                         <label>
                             Godzina Startu: {formData.startTime}
                         </label><br />
                         <label>
-                            Czas wynajmu(h):
+                            Czas wynajmu:
                             <select
                                 name="duration"
                                 value={formData.duration}
