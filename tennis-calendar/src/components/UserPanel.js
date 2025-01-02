@@ -4,6 +4,7 @@ import axios from "axios";
 const UserPanel = () => {
   const [userData, setUserData] = useState(null);
   const [reservations, setReservations] = useState([]);
+  const [showFutureReservations, setShowFutureReservations] = useState(true); // Przełącznik przyszłe/przeszłe
   const [isEditing, setIsEditing] = useState(false);
   const [editFormData, setEditFormData] = useState({
     first_name: "",
@@ -61,11 +62,18 @@ const UserPanel = () => {
 
   const fetchReservations = () => {
     axios
-      .get("http://127.0.0.1:8000/api/user-reservations/", {
-        headers: { Authorization: `Bearer ${localStorage.getItem("access_token")}` },
-      })
-      .then((response) => setReservations(response.data))
-      .catch((error) => console.error("Błąd pobierania rezerwacji:", error));
+        .get("http://127.0.0.1:8000/api/user-reservations/", {
+            headers: { Authorization: `Bearer ${localStorage.getItem("access_token")}` },
+        })
+        .then((response) => {
+            const sortedReservations = response.data.sort((a, b) => {
+                const dateA = new Date(`${a.date}T${a.start_time}`);
+                const dateB = new Date(`${b.date}T${b.start_time}`);
+                return dateA - dateB;
+            });
+            setReservations(sortedReservations);
+        })
+        .catch((error) => console.error("Błąd pobierania rezerwacji:", error));
   };
 
   const handleDeleteReservation = (reservationId) => {
@@ -96,14 +104,28 @@ const UserPanel = () => {
       )
       .then(() => {
         alert("Notatka zaktualizowana!");
-        setEditingNote(null); // Zakończ edycję
-        fetchReservations(); // Odśwież dane
+        setEditingNote(null);
+        fetchReservations();
       })
       .catch((error) => {
         console.error("Błąd podczas aktualizacji notatki:", error);
         alert("Nie udało się zaktualizować notatki.");
       });
   };
+
+  const currentDateTime = new Date();
+
+  const futureReservations = reservations.filter((reservation) => {
+    const reservationStartTime = new Date(`${reservation.date}T${reservation.start_time}`);
+    return reservationStartTime > currentDateTime;
+  });
+
+  const pastReservations = reservations.filter((reservation) => {
+    const reservationStartTime = new Date(`${reservation.date}T${reservation.start_time}`);
+    return reservationStartTime <= currentDateTime;
+  });
+
+  
 
   return (
     <div style={{ padding: "20px" }}>
@@ -210,88 +232,135 @@ const UserPanel = () => {
         <p>Ładowanie danych użytkownika...</p>
       )}
       <h3>Twoje Rezerwacje</h3>
-      {reservations.length > 0 ? (
+      <div style={{ marginBottom: "20px" }}>
+        <button
+          onClick={() => setShowFutureReservations(true)}
+          style={{
+            marginRight: "10px",
+            padding: "8px 12px",
+            backgroundColor: showFutureReservations ? "#007bff" : "#ccc",
+            color: "#fff",
+            border: "none",
+            borderRadius: "5px",
+          }}
+        >
+          Nadchodzące
+        </button>
+        <button
+          onClick={() => setShowFutureReservations(false)}
+          style={{
+            padding: "8px 12px",
+            backgroundColor: !showFutureReservations ? "#007bff" : "#ccc",
+            color: "#fff",
+            border: "none",
+            borderRadius: "5px",
+          }}
+        >
+          Przeszłe
+        </button>
+      </div>
+      {showFutureReservations ? (
         <ul>
-          {reservations.map((reservation) => (
-            <li key={reservation.id}>
-              <strong>{reservation.date} {reservation.start_time}-{reservation.end_time}</strong> | Kort: {reservation.court_name}
-              <div>
-                <strong>Notatki:</strong>{" "}
-                {editingNote === reservation.id ? (
-                  <>
-                    <textarea
-                      value={editedNote}
-                      onChange={(e) => setEditedNote(e.target.value)}
-                      maxLength="150"
-                      style={{ width: "100%", height: "50px" }}
-                    />
-                    <button
-                      onClick={() => saveNote(reservation.id)}
-                      style={{
-                        margin: "5px",
-                        padding: "8px 12px",
-                        backgroundColor: "#28a745",
-                        color: "#fff",
-                        border: "none",
-                        borderRadius: "5px",
-                      }}
-                    >
-                      Zapisz
-                    </button>
-                    <button
-                      onClick={() => setEditingNote(null)}
-                      style={{
-                        margin: "5px",
-                        padding: "8px 12px",
-                        backgroundColor: "#dc3545",
-                        color: "#fff",
-                        border: "none",
-                        borderRadius: "5px",
-                      }}
-                    >
-                      Anuluj
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    {reservation.notes}
-                    <button
-                      onClick={() => {
-                        setEditingNote(reservation.id);
-                        setEditedNote(reservation.notes);
-                      }}
-                      style={{
-                        marginLeft: "10px",
-                        padding: "5px 10px",
-                        backgroundColor: "#007bff",
-                        color: "#fff",
-                        border: "none",
-                        borderRadius: "5px",
-                      }}
-                    >
-                      Edytuj
-                    </button>
-                  </>
-                )}
-              </div>
-              <button
-                onClick={() => handleDeleteReservation(reservation.id)}
-                style={{
-                  marginTop: "5px",
-                  padding: "5px 10px",
-                  backgroundColor: "#dc3545",
-                  color: "#fff",
-                  border: "none",
-                  borderRadius: "5px",
-                }}
-              >
-                Usuń
-              </button>
-            </li>
-          ))}
+          {futureReservations.length > 0 ? (
+            futureReservations.map((reservation) => (
+              <li key={reservation.id}>
+                <strong>
+                  {reservation.date} {reservation.start_time}-{reservation.end_time}
+                </strong>{" "}
+                | Kort: {reservation.court_name}
+                <div>
+                  <strong>Notatki:</strong>{" "}
+                  {editingNote === reservation.id ? (
+                    <>
+                      <textarea
+                        value={editedNote}
+                        onChange={(e) => setEditedNote(e.target.value)}
+                        maxLength="150"
+                        style={{ width: "100%", height: "50px" }}
+                      />
+                      <button
+                        onClick={() => saveNote(reservation.id)}
+                        style={{
+                          margin: "5px",
+                          padding: "8px 12px",
+                          backgroundColor: "#28a745",
+                          color: "#fff",
+                          border: "none",
+                          borderRadius: "5px",
+                        }}
+                      >
+                        Zapisz
+                      </button>
+                      <button
+                        onClick={() => setEditingNote(null)}
+                        style={{
+                          margin: "5px",
+                          padding: "8px 12px",
+                          backgroundColor: "#dc3545",
+                          color: "#fff",
+                          border: "none",
+                          borderRadius: "5px",
+                        }}
+                      >
+                        Anuluj
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      {reservation.notes || "Brak notatek"}
+                      <button
+                        onClick={() => {
+                          setEditingNote(reservation.id);
+                          setEditedNote(reservation.notes || "");
+                        }}
+                        style={{
+                          marginLeft: "10px",
+                          padding: "5px 10px",
+                          backgroundColor: "#007bff",
+                          color: "#fff",
+                          border: "none",
+                          borderRadius: "5px",
+                        }}
+                      >
+                        Edytuj
+                      </button>
+                    </>
+                  )}
+                </div>
+                <button
+                  onClick={() => handleDeleteReservation(reservation.id)}
+                  style={{
+                    marginTop: "5px",
+                    padding: "5px 10px",
+                    backgroundColor: "#dc3545",
+                    color: "#fff",
+                    border: "none",
+                    borderRadius: "5px",
+                  }}
+                >
+                  Usuń
+                </button>
+              </li>
+            ))
+          ) : (
+            <p>Brak nadchodzących rezerwacji.</p>
+          )}
         </ul>
       ) : (
-        <p>Brak rezerwacji.</p>
+        <ul>
+          {pastReservations.length > 0 ? (
+            pastReservations.map((reservation) => (
+              <li key={reservation.id}>
+                <strong>
+                  {reservation.date} {reservation.start_time}-{reservation.end_time}
+                </strong>{" "}
+                | Kort: {reservation.court_name}
+              </li>
+            ))
+          ) : (
+            <p>Brak przeszłych rezerwacji.</p>
+          )}
+        </ul>
       )}
     </div>
   );
