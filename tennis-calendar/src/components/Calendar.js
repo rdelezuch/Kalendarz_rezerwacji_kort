@@ -24,6 +24,9 @@ const Calendar = () => {
     const [availableCourts, setAvailableCourts] = useState([]);
     const [selectedCourt, setSelectedCourt] = useState("all");
     const [selectedEvent, setSelectedEvent] = useState(null);
+    const [isStaff, setIsStaff] = useState(false);
+    const [adminModalIsOpen, setAdminModalIsOpen] = useState(false);
+
 
     const { isAuthModalOpen, openAuthModal, isAuthenticated } = useAuth();
 
@@ -50,11 +53,23 @@ const Calendar = () => {
     useEffect(() => {
         fetchAllCourts();
         fetchEvents("all");
+
+        // Domyślne kolorowanie przycisków FullCalendar
         const buttons = document.querySelectorAll('.fc-toolbar .fc-button');
         const allCourtsButton = Array.from(buttons).find((button) => button.textContent === 'Wszystkie Korty');
         if (allCourtsButton) {
             allCourtsButton.classList.add('active-button');
         }
+
+        // Kontrola uprawnień użytkownika
+        axios
+        .get("http://127.0.0.1:8000/api/user-data/", {
+            headers: { Authorization: `Bearer ${localStorage.getItem("access_token")}` },
+        })
+        .then((response) => {
+            setIsStaff(response.data.is_staff);
+        })
+        .catch((error) => console.error("Błąd podczas pobierania danych użytkownika:", error));
     }, []);
 
     // Obsługa zmiany wybranego kortu
@@ -80,31 +95,50 @@ const Calendar = () => {
 
     // Obsługa kliknięcia na istniejące wydarzenie
     const handleEventClick = (info) => {
-        if (!isAuthenticated) {
-            openAuthModal(); // Otwórz modal logowania z kontekstu
-            return;
-        }
-
-        if (info.event.title === "Kort zajęty" || info.event.title === "Wszystkie zajęte") {
-            alert("Wybrany termin jest zajęty.");
-        } else if (info.event.title === "Dostępne korty" || info.event.title === "Kort dostępny") {
-            const startTime = info.event.startStr;
-            const endTime = info.event.endStr;
-
-            fetchAvailableCourts(startTime, endTime);
-
-            setFormData({
-                date: info.event.startStr.split("T")[0],
-                startTime: info.event.startStr.split("T")[1].slice(0, 5),
-                endTime: info.event.endStr.split("T")[1].slice(0, 5),
-                court: selectedCourt === "all" ? "" : selectedCourt,
-                notes: "",
-            });
-
-            setSelectedEvent(null);
-            setModalIsOpen(true);
+    
+        const startTime = info.event.startStr
+        const endTime = info.event.endStr
+    
+        setFormData({
+            date: startTime.split("T")[0],
+            startTime: startTime.split("T")[1].slice(0, 5),
+            endTime: endTime.split("T")[1].slice(0, 5),
+            court: selectedCourt === "all" ? fetchAvailableCourts(startTime, endTime) : selectedCourt,
+            notes: "",
+        });
+    
+        if (isStaff) {
+            axios
+                .get("http://127.0.0.1:8000/api/court-reservation-details/", {
+                    params: {
+                        court_id: selectedCourt === "all" ? "all" : selectedCourt,
+                        start_time: startTime,
+                        end_time: endTime,
+                    },
+                })
+                .then((response) => {
+                    setSelectedEvent(response.data);
+                    setAdminModalIsOpen(true); // Otwórz modal administratora
+                })
+                .catch((error) => {
+                    console.error("Błąd podczas pobierania szczegółów rezerwacji:", error);
+                    alert("Nie udało się pobrać szczegółów rezerwacji.");
+                });
+        } else {
+            // Obsługa zwykłego użytkownika
+            if (!isAuthenticated) {
+                openAuthModal();
+                return;
+            }
+    
+            if (info.event.title === "Kort zajęty" || info.event.title === "Wszystkie zajęte") {
+                alert("Wybrany termin jest zajęty.");
+            } else if (info.event.title === "Dostępne korty" || info.event.title === "Kort dostępny") {
+                setModalIsOpen(true);
+            }
         }
     };
+    
 
     // Pobieranie listy wszystkich kortów
     const fetchAllCourts = () => {
@@ -143,6 +177,24 @@ const Calendar = () => {
             [name]: value,
         });
     };
+
+    const handleDeleteReservation = (reservationId) => {
+        if (window.confirm("Czy na pewno chcesz usunąć tę rezerwację?")) {
+            axios
+                .delete(`http://127.0.0.1:8000/api/delete-reservation/${reservationId}/`, {
+                    headers: { Authorization: `Bearer ${localStorage.getItem("access_token")}` },
+                })
+                .then((response) => {
+                    alert("Rezerwacja została usunięta.");
+                    setAdminModalIsOpen(false);
+                    fetchEvents(selectedCourt);
+                })
+                .catch((error) => {
+                    console.error("Błąd podczas usuwania rezerwacji:", error);
+                    alert("Nie udało się usunąć rezerwacji.");
+                });
+        }
+    };    
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -300,68 +352,111 @@ const Calendar = () => {
 
             {/* Modal dla rezerwacji */}
             <Modal isOpen={modalIsOpen} onRequestClose={closeModal} ariaHideApp={false}>
-                {selectedEvent ? (
-                    <div>
-                        <h2>Szczegóły Rezerwacji</h2>
-                        <p><strong>Tytuł:</strong> {selectedEvent.title}</p>
-                        <p><strong>Początek:</strong> {selectedEvent.start}</p>
-                        <p><strong>Koniec:</strong> {selectedEvent.end}</p>
-                        <button onClick={closeModal}>Zamknij</button>
-                    </div>
-                ) : (
-                    <form onSubmit={handleSubmit}>
-                        <h3>Rezerwacja Terminu</h3>
-                        <label>Data: {formData.date}</label><br />
-                        <label>
-                            Kort:
-                            {selectedCourt === 'all'
-                            ? (<select name="court" value={formData.court} onChange={handleInputChange} required>
-                                <option value="">Wybierz kort</option>
-                                {availableCourts.map(court => (
-                                    <option key={court.id} value={court.id}>{court.id}</option>
-                                ))}
-                            </select>)
-                            : (<label> {selectedCourt}</label>)}
-                        </label><br />
-                        <label>
-                            Godzina Startu: {formData.startTime}
-                        </label><br />
-                        <label>
-                            Czas wynajmu:
-                            <select
-                                name="duration"
-                                value={formData.duration}
-                                onChange={(e) =>
-                                    setFormData({
-                                        ...formData,
-                                        duration: e.target.value,
-                                    })
-                                }
-                                required
-                            >
-                                <option value="">Wybierz czas trwania</option>
-                                <option value="1">1 godzina</option>
-                                <option value="2">2 godziny</option>
-                                <option value="3">3 godziny</option>
-                            </select>
-                        </label><br />
-                        <label>
-                            Notatki (opcjonalne, max 150 znaków):
-                            <br /><textarea
-                                name="notes"
-                                value={formData.notes}
-                                onChange={handleInputChange}
-                                maxLength="150"
-                                placeholder="Dodaj notatki do rezerwacji..."
-                            />
-                        </label><br />
-                        <button type="submit">Rezerwuj</button>
-                        <button type="button" onClick={closeModal}>Anuluj</button>
-                    </form>
-                )}
+                <form onSubmit={handleSubmit}>
+                    <h3>Rezerwacja Terminu</h3>
+                    <label>Data: {formData.date}</label><br />
+                    <label>
+                        Kort:
+                        {selectedCourt === 'all'
+                        ? (<select name="court" value={formData.court} onChange={handleInputChange} required>
+                            <option value="">Wybierz kort</option>
+                            {availableCourts.map(court => (
+                                <option key={court.id} value={court.id}>{court.id}</option>
+                            ))}
+                        </select>)
+                        : (<label> {selectedCourt}</label>)}
+                    </label><br />
+                    <label>
+                        Godzina Startu: {formData.startTime}
+                    </label><br />
+                    <label>
+                        Czas wynajmu:
+                        <select
+                            name="duration"
+                            value={formData.duration}
+                            onChange={(e) =>
+                                setFormData({
+                                    ...formData,
+                                    duration: e.target.value,
+                                })
+                            }
+                            required
+                        >
+                            <option value="">Wybierz czas trwania</option>
+                            <option value="1">1 godzina</option>
+                            <option value="2">2 godziny</option>
+                            <option value="3">3 godziny</option>
+                        </select>
+                    </label><br />
+                    <label>
+                        Notatki (opcjonalne, max 150 znaków):
+                        <br /><textarea
+                            name="notes"
+                            value={formData.notes}
+                            onChange={handleInputChange}
+                            maxLength="150"
+                            placeholder="Dodaj notatki do rezerwacji..."
+                        />
+                    </label><br />
+                    <button type="submit">Rezerwuj</button>
+                    <button type="button" onClick={closeModal}>Anuluj</button>
+                </form>
             </Modal>
             {/* Modal logowania */}
             <AuthModal />
+            {/* Modal Administratora*/}
+            <Modal isOpen={adminModalIsOpen} onRequestClose={() => setAdminModalIsOpen(false)} ariaHideApp={false}>
+                <h3>Szczegóły Rezerwacji</h3>
+                {selectedEvent && selectedEvent.length > 0 ? (
+                    <ul>
+                        {selectedEvent
+                        .sort((a, b) => a.court_id - b.court_id)
+                        .map((reservation) => (
+                            <li key={reservation.id}>
+                                <strong>Kort:</strong> {reservation.court_id} <br />
+                                <strong>Godzina: </strong>
+                                {new Date(new Date(reservation.start_time).getTime() + 60 * 60 * 1000)
+                                    .toISOString()
+                                    .split("T")[1]
+                                    .slice(0, 5)} 
+                                - 
+                                {new Date(new Date(reservation.end_time).getTime() + 60 * 60 * 1000)
+                                    .toISOString()
+                                    .split("T")[1]
+                                    .slice(0, 5)}
+                                <br />
+                                <strong>Użytkownik:</strong> {reservation.user_email || "Brak przypisanego użytkownika"} <br />
+                                <strong>Telefon:</strong> {reservation.user_phone} <br />
+                                <strong>Notatki:</strong> {reservation.notes || "Brak"} <br />
+                                <button
+                                    onClick={() => handleDeleteReservation(reservation.id)}
+                                    style={{
+                                        padding: "5px 10px",
+                                        backgroundColor: "#dc3545",
+                                        color: "#fff",
+                                        border: "none",
+                                        borderRadius: "5px",
+                                        marginTop: "10px",
+                                    }}
+                                >
+                                    Usuń rezerwację
+                                </button>
+                            </li>
+                        ))}
+                    </ul>
+                ) : (
+                    <p>Brak rezerwacji.</p>
+                )}
+                <button
+                    onClick={() => {
+                        setAdminModalIsOpen(false);
+                        setModalIsOpen(true);
+                    }}
+                    style={{ padding: "10px", backgroundColor: "#007bff", color: "#fff" }}
+                >
+                    Dodaj nową rezerwację
+                </button>
+            </Modal>
         </>
     );
 };
