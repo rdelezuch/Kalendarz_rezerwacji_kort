@@ -4,7 +4,7 @@ import axios from "axios";
 const UserPanel = () => {
   const [userData, setUserData] = useState(null);
   const [reservations, setReservations] = useState([]);
-  const [showFutureReservations, setShowFutureReservations] = useState(true); // Przełącznik przyszłe/przeszłe
+  const [showFutureReservations, setShowFutureReservations] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
   const [editFormData, setEditFormData] = useState({
     first_name: "",
@@ -12,11 +12,10 @@ const UserPanel = () => {
     email: "",
     phone: "",
   });
-  const [editingNote, setEditingNote] = useState(null); // Rezerwacja do edycji notatki
-  const [editedNote, setEditedNote] = useState(""); // Przechowuje treść notatki
+  const [editingNote, setEditingNote] = useState(null);
+  const [editedNote, setEditedNote] = useState("");
 
   useEffect(() => {
-    // Pobierz dane użytkownika
     axios
       .get("http://127.0.0.1:8000/api/user-data/", {
         headers: { Authorization: `Bearer ${localStorage.getItem("access_token")}` },
@@ -32,7 +31,6 @@ const UserPanel = () => {
       })
       .catch((error) => console.error("Błąd pobierania danych użytkownika:", error));
 
-    // Pobierz rezerwacje użytkownika
     fetchReservations();
   }, []);
 
@@ -265,7 +263,11 @@ const UserPanel = () => {
             futureReservations.map((reservation) => (
               <li key={reservation.id}>
                 <strong>
-                  {reservation.date} {reservation.start_time}-{reservation.end_time}
+                  {new Date(reservation.date).toLocaleDateString("pl-PL")}{" "}
+                  {String(parseInt(reservation.start_time.slice(0, 2)) + 1).padStart(2, "0")}:
+                  {reservation.start_time.slice(3, 5)}-
+                  {String(parseInt(reservation.end_time.slice(0, 2)) + 1).padStart(2, "0")}:
+                  {reservation.end_time.slice(3, 5)}
                 </strong>{" "}
                 | Kort: {reservation.court_name}
                 <div>
@@ -352,7 +354,11 @@ const UserPanel = () => {
             pastReservations.map((reservation) => (
               <li key={reservation.id}>
                 <strong>
-                  {reservation.date} {reservation.start_time}-{reservation.end_time}
+                  {new Date(reservation.date).toLocaleDateString("pl-PL")}{" "}
+                  {String(parseInt(reservation.start_time.slice(0, 2)) + 1).padStart(2, "0")}:
+                  {reservation.start_time.slice(3, 5)}-
+                  {String(parseInt(reservation.end_time.slice(0, 2)) + 1).padStart(2, "0")}:
+                  {reservation.end_time.slice(3, 5)}
                 </strong>{" "}
                 | Kort: {reservation.court_name}
               </li>
