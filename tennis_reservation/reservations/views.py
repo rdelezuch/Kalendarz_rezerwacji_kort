@@ -52,10 +52,11 @@ def available_slots(request):
 
 @api_view(['GET'])
 def weekly_slots(request):
+    court_id = request.GET.get('court')
     courts = Court.objects.all()
     current_date = datetime.now().date()
     opening_hour, closing_hour = 8, 20  # Zakres godzin pracy
-    days_to_display = 90  # Liczba dni do wyświetlenia
+    days_to_display = 30  # Liczba dni do wyświetlenia
 
     slots = []
     for day_offset in range(days_to_display):
@@ -65,14 +66,16 @@ def weekly_slots(request):
             slot_start = datetime.combine(day, datetime.min.time()) + timedelta(hours=hour)
             slot_end = slot_start + timedelta(hours=1)
 
-            # Sprawdź kolizje czasowe z rezerwacjami
+            # Sprawdzenie kolizji
             overlapping_reservations = Reservation.objects.filter(
-                start_time__lt=slot_end,  # Rezerwacja zaczyna się przed końcem slotu
-                end_time__gt=slot_start   # Rezerwacja kończy się po rozpoczęciu slotu
+                start_time__lt=slot_end,
+                end_time__gt=slot_start
             )
 
-            # Jeśli liczba rezerwacji jest równa liczbie kortów, wszystkie są zajęte
-            if overlapping_reservations.count() >= courts.count():
+            if court_id:
+                overlapping_reservations = overlapping_reservations.filter(court_id=court_id)
+
+            if overlapping_reservations.count() >= (1 if court_id else courts.count()):
                 status = "full"
             else:
                 status = "available"
@@ -85,6 +88,11 @@ def weekly_slots(request):
             })
 
     return Response(slots)
+
+@api_view(['GET'])
+def get_all_courts(request):
+    courts = Court.objects.all().values('id', 'name')
+    return Response(list(courts))
 
 @api_view(['POST'])
 #@permission_classes([IsAuthenticated])
@@ -113,7 +121,6 @@ def check_availability(request):
         return JsonResponse({'available': True})
 
     except Exception as e:
-        # Obsługa błędów i logowanie
         return JsonResponse({'error': f'Błąd w przetwarzaniu żądania: {e}'}, status=400)
 
 @api_view(['GET'])
@@ -127,16 +134,13 @@ def get_available_courts(request):
     start_time = parse_datetime(start_time)
     end_time = parse_datetime(end_time)
 
-    # Znajdź zajęte korty w podanym przedziale czasowym
     occupied_courts = Reservation.objects.filter(
-        start_time__lt=end_time,  # Rezerwacja zaczyna się przed końcem nowego przedziału
-        end_time__gt=start_time  # Rezerwacja kończy się po rozpoczęciu nowego przedziału
+        start_time__lt=end_time,
+        end_time__gt=start_time
     ).exclude(
-        end_time=start_time  # Wyklucz rezerwacje, które kończą się dokładnie na początku nowego przedziału
+        end_time=start_time 
     ).values_list('court_id', flat=True)
 
-
-    # Znajdź dostępne korty
     available_courts = Court.objects.exclude(id__in=occupied_courts)
 
     return JsonResponse({"available_courts": list(available_courts.values("id", "name"))})

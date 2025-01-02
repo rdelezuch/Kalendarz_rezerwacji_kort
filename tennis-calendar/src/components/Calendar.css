@@ -52,6 +52,10 @@
 }
 
 .fc-daygrid-event-dot {
-    background-color: black !important; /* Zmienia kolor na czarny */
-    border-color: black !important;     /* Opcjonalnie zmienia obramowanie */
+    background-color: black !important;
+    border-color: black !important;
+}
+
+.active-button {
+    background-color: #1a252f !important;
 }
