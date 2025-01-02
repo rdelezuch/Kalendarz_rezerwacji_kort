@@ -175,6 +175,7 @@ class RegisterView(APIView):
 def user_data(request):
     user = request.user
     data = {
+        "is_staff": user.is_staff,
         "email": user.email,
         "first_name": user.first_name,
         "last_name": user.last_name,
@@ -253,6 +254,39 @@ def send_reservation_email(request):
     except Exception as e:
         return JsonResponse({"error": f"Błąd podczas wysyłania e-maila: {str(e)}"}, status=500)
 
+@api_view(['GET'])
+def court_reservation_details(request):
+    court_id = request.query_params.get('court_id')
+    start_time = request.query_params.get('start_time')
+    end_time = request.query_params.get('end_time')
+
+    if not all([start_time, end_time]):
+        return JsonResponse({"error": "Brak wymaganych parametrów"}, status=400)
+
+    try:
+        reservations = Reservation.objects.filter(
+            start_time__lt=end_time,
+            end_time__gt=start_time
+        )
+
+        if court_id != "all":
+            reservations = reservations.filter(court_id=court_id)
+
+        reservation_list = []
+        for reservation in reservations:
+            reservation_list.append({
+                "id": reservation.id,
+                "user_email": reservation.user.email if reservation.user else None,
+                "start_time": reservation.start_time,
+                "end_time": reservation.end_time,
+                "court_id": reservation.court.id,
+                "notes": reservation.notes,
+                "user_phone": reservation.user.phone,
+            })
+
+        return JsonResponse(reservation_list, safe=False, status=200)
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
 
 class CourtViewSet(viewsets.ModelViewSet):
     queryset = Court.objects.all()

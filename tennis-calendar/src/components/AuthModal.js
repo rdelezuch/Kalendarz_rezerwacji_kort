@@ -12,11 +12,11 @@ const AuthModal = () => {
         lastName: "",
         phone: "",
     });
-    const { isAuthModalOpen, closeAuthModal, login, authMode } = useAuth(); // Pobierz funkcje i stany z kontekstu
-    const isLogin = authMode === "login"; // Tryb logowania/rejestracji zależny od authMode
+    const { isAuthModalOpen, closeAuthModal, login, authMode } = useAuth();
+    const isLogin = authMode === "login";
+    const [errors, setErrors] = useState({});
 
     useEffect(() => {
-        // Wyczyść dane formularza przy otwarciu modala
         setFormData({
             email: "",
             password: "",
@@ -27,9 +27,26 @@ const AuthModal = () => {
         });
     }, [authMode, isAuthModalOpen]);
 
+    const validateField = (name, value) => {
+        const namePattern = /^[A-Za-zÀ-ÿ\s-]+$/;
+
+        if (value === "") {
+            return "";
+        }
+
+        if (!namePattern.test(value)) {
+            return "Pole może zawierać tylko litery, spacje i myślniki.";
+        }
+        return "";
+    };
+
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setFormData({ ...formData, [name]: value });
+
+        // Walidacja pola
+        const error = validateField(name, value);
+        setErrors({ ...errors, [name]: error });
     };
 
     const handleSubmit = (e) => {
@@ -59,6 +76,13 @@ const AuthModal = () => {
                 alert("Hasła muszą być takie same!");
                 return;
             }
+
+            const newErrors = {
+                first_name: validateField("firstName", formData.firstName),
+                last_name: validateField("lastName", formData.lastName),
+            };
+            setErrors(newErrors);
+
             axios
                 .post("http://127.0.0.1:8000/api/register/", {
                     email: formData.email,
@@ -69,7 +93,7 @@ const AuthModal = () => {
                 })
                 .then(() => {
                     alert("Rejestracja pomyślna! Możesz się teraz zalogować.");
-                    closeAuthModal(); // Zamknij modal
+                    closeAuthModal();
                 })
                 .catch((error) => {
                     console.error("Błąd rejestracji:", error);
@@ -80,7 +104,7 @@ const AuthModal = () => {
 
     return (
         <Modal
-            isOpen={isAuthModalOpen} // Związane z kontekstem
+            isOpen={isAuthModalOpen}
             onRequestClose={closeAuthModal}
             ariaHideApp={false}
         >
@@ -97,6 +121,11 @@ const AuthModal = () => {
                                 onChange={handleInputChange}
                                 required
                             />
+                            {errors.firstName && (
+                                <p style={{ color: "red", fontSize: "14px" }}>
+                                    {errors.firstName}
+                                </p>
+                            )}
                         </label><br/>
                         <label>
                             Nazwisko:
@@ -107,6 +136,11 @@ const AuthModal = () => {
                                 onChange={handleInputChange}
                                 required
                             />
+                            {errors.lastName && (
+                                <p style={{ color: "red", fontSize: "14px" }}>
+                                    {errors.lastName}
+                                </p>
+                            )}
                         </label><br/>
                         <label>
                             Telefon:
@@ -115,7 +149,7 @@ const AuthModal = () => {
                                 name="phone"
                                 value={formData.phone}
                                 onChange={handleInputChange}
-                                pattern="^(\+48)?\d{9}$" // Wzorzec dla polskich numerów
+                                pattern="^(\+48)?\d{9}$"
                                 title="Numer telefonu musi być w formacie: '123456789' lub '+48123456789'"
                                 required
                             />

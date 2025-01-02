@@ -12,6 +12,7 @@ const UserPanel = () => {
     email: "",
     phone: "",
   });
+  const [errors, setErrors] = useState({});
   const [editingNote, setEditingNote] = useState(null);
   const [editedNote, setEditedNote] = useState("");
 
@@ -34,15 +35,55 @@ const UserPanel = () => {
     fetchReservations();
   }, []);
 
+  // Funkcja walidacji
+  const validateField = (name, value) => {
+    let error = "";
+    if (name === "first_name" || name === "last_name") {
+      const namePattern = /^[A-Za-zÀ-ÿ\s-]+$/;
+      if (!namePattern.test(value) && value !== "") {
+        error = "Pole może zawierać tylko litery, spacje i myślniki.";
+      }
+    }
+    if (name === "email") {
+      const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailPattern.test(value) && value !== "") {
+        error = "Podaj poprawny adres e-mail.";
+      }
+    }
+    if (name === "phone") {
+      const phonePattern = /^(\+48)?\d{9}$/;
+      if (!phonePattern.test(value) && value !== "") {
+        error = "Podaj poprawny numer telefonu w formacie '+48XXXXXXXXX' lub 'XXXXXXXXX'.";
+      }
+    }
+    return error;
+  };
+
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setEditFormData((prevState) => ({
       ...prevState,
       [name]: value,
     }));
+    setErrors((prevErrors) => ({
+      ...prevErrors,
+      [name]: validateField(name, value),
+    }));
   };
 
   const handleSaveChanges = () => {
+    const validationErrors = {};
+    Object.keys(editFormData).forEach((key) => {
+      validationErrors[key] = validateField(key, editFormData[key]);
+    });
+    setErrors(validationErrors);
+
+    const hasErrors = Object.values(validationErrors).some((error) => error !== "");
+    if (hasErrors) {
+      alert("Popraw błędy w formularzu przed zapisaniem.");
+      return;
+    }
+
     axios
       .put("http://127.0.0.1:8000/api/update-user-data/", editFormData, {
         headers: { Authorization: `Bearer ${localStorage.getItem("access_token")}` },
@@ -162,7 +203,8 @@ const UserPanel = () => {
                   style={{ margin: "5px 0", display: "block" }}
                   required
                 />
-              </label>
+                {errors.first_name && <span style={{ color: "red" }}>{errors.first_name}</span>}
+              </label><br/>
               <label>
                 Nazwisko:
                 <input
@@ -173,7 +215,8 @@ const UserPanel = () => {
                   style={{ margin: "5px 0", display: "block" }}
                   required
                 />
-              </label>
+                {errors.last_name && <span style={{ color: "red" }}>{errors.last_name}</span>}
+              </label><br/>
               <label>
                 Email:
                 <input
@@ -184,7 +227,8 @@ const UserPanel = () => {
                   style={{ margin: "5px 0", display: "block" }}
                   required
                 />
-              </label>
+                {errors.email && <span style={{ color: "red" }}>{errors.email}</span>}
+              </label><br/>
               <label>
                 Telefon:
                 <input
@@ -192,12 +236,11 @@ const UserPanel = () => {
                   name="phone"
                   value={editFormData.phone}
                   onChange={handleInputChange}
-                  pattern="^(\+48)?\d{9}$"
-                  title="Numer telefonu musi być w formacie: '+48123456789' lub '123456789'."
                   required
                   style={{ margin: "5px 0", display: "block" }}
                 />
-              </label>
+                {errors.phone && <span style={{ color: "red" }}>{errors.phone}</span>}
+              </label><br/>
               <button
                 onClick={handleSaveChanges}
                 style={{
