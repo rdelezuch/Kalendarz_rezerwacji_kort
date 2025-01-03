@@ -26,9 +26,11 @@ const Calendar = () => {
     const [selectedEvent, setSelectedEvent] = useState(null);
     const [isStaff, setIsStaff] = useState(false);
     const [adminModalIsOpen, setAdminModalIsOpen] = useState(false);
-
-
-    const { isAuthModalOpen, openAuthModal, isAuthenticated } = useAuth();
+    const [calendarView] = useState(window.innerWidth <= 768 ? "timeGridDay" : "timeGridWeek");
+    const [calendarViewRatio] = useState(window.innerWidth <= 768 ? "1" : "2.5");
+    const [calendarViewButtonLeft] = useState(window.innerWidth <= 768 ? "" : "prev,today,next dayGridMonth,timeGridWeek,timeGridDay");
+    const [calendarViewButtonRight] = useState(window.innerWidth <= 768 ? "allCourts,court1,court2,court3 prev,today,next" : "allCourts,court1,court2,court3");
+    const { openAuthModal, isAuthenticated } = useAuth();
 
     // Funkcja do pobierania wydarzeń
     const fetchEvents = (selectedCourt) => {
@@ -74,8 +76,8 @@ const Calendar = () => {
 
     // Obsługa zmiany wybranego kortu
     const handleCourtChange = (selected) => {
-        setSelectedCourt(selected); // Ustaw nowy wybrany kort
-        fetchEvents(selected); // Pobierz wydarzenia dla wybranego kortu
+        setSelectedCourt(selected);
+        fetchEvents(selected);
     
         // Zmiana stylu aktywnego przycisku
         const buttons = document.querySelectorAll('.fc-toolbar .fc-button');
@@ -118,7 +120,7 @@ const Calendar = () => {
                 })
                 .then((response) => {
                     setSelectedEvent(response.data);
-                    setAdminModalIsOpen(true); // Otwórz modal administratora
+                    setAdminModalIsOpen(true);
                 })
                 .catch((error) => {
                     console.error("Błąd podczas pobierania szczegółów rezerwacji:", error);
@@ -286,7 +288,7 @@ const Calendar = () => {
                 plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
                 locale="pl"
                 timeZone="Europe/Warsaw"
-                initialView="timeGridWeek"
+                initialView={calendarView}
                 slotMinTime="08:00:00"
                 slotMaxTime="20:00:00"
                 slotLabelFormat={{
@@ -296,8 +298,10 @@ const Calendar = () => {
                 }}
                 slotDuration="01:00:00"
                 slotLabelInterval="01:00"
-                height="auto"
-                aspectRatio={1.5}
+                //slotEventOverlap={false}
+                //height="auto"
+                //contentHeight="auto"
+                aspectRatio={calendarViewRatio}
                 customButtons={{
                     allCourts: {
                       text: 'Wszystkie Korty',
@@ -315,12 +319,13 @@ const Calendar = () => {
                         text: allCourts[2]?.name || 'Kort 3',
                         click: () => handleCourtChange(allCourts[2]?.id),
                       },
-                  }}
-                  headerToolbar={{
-                    left: 'prev,next today',
-                    center: 'title',
-                    right: 'allCourts,court1,court2,court3 dayGridMonth,timeGridWeek,timeGridDay',
-                  }}
+                }}
+                titleFormat={ { year: 'numeric', month: 'long', day: 'numeric' } }
+                headerToolbar={{
+                left: calendarViewButtonLeft,
+                center: 'title',
+                right: calendarViewButtonRight,
+                }}
                 buttonText={{
                     today: 'Dziś',
                     month: 'Miesiąc',
@@ -430,14 +435,7 @@ const Calendar = () => {
                                 <strong>Notatki:</strong> {reservation.notes || "Brak"} <br />
                                 <button
                                     onClick={() => handleDeleteReservation(reservation.id)}
-                                    style={{
-                                        padding: "5px 10px",
-                                        backgroundColor: "#dc3545",
-                                        color: "#fff",
-                                        border: "none",
-                                        borderRadius: "5px",
-                                        marginTop: "10px",
-                                    }}
+                                    className="delete-reservation-btn"
                                 >
                                     Usuń rezerwację
                                 </button>
@@ -452,7 +450,7 @@ const Calendar = () => {
                         setAdminModalIsOpen(false);
                         setModalIsOpen(true);
                     }}
-                    style={{ padding: "10px", backgroundColor: "#007bff", color: "#fff" }}
+                    className="add-reservation-admin-btn"
                 >
                     Dodaj nową rezerwację
                 </button>

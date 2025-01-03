@@ -1,0 +1,110 @@
+/* Stylizacja głównego kontenera */
+.user-panel-container {
+    padding: 20px;
+  }
+  
+  /* Nagłówki */
+  .user-panel-container h2,
+  .user-panel-container h3 {
+    margin-bottom: 20px;
+  }
+  
+  /* Przyciski */
+  .user-panel-button {
+    padding: 8px 12px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  .user-panel-button.edit {
+    background-color: #007bff;
+    color: #fff;
+  }
+  
+  .user-panel-button.save {
+    background-color: #28a745;
+    color: #fff;
+  }
+  
+  .user-panel-button.cancel {
+    background-color: #dc3545;
+    color: #fff;
+  }
+  
+  .user-panel-button.toggle {
+    margin-right: 10px;
+    background-color: #ccc;
+    color: #fff;
+  }
+  
+  .user-panel-button.toggle.active {
+    background-color: #007bff;
+  }
+  
+  /* Inputy i etykiety */
+  .user-panel-label {
+    display: block;
+    margin: 5px 0;
+  }
+  
+  .user-panel-input {
+    margin: 5px 0;
+    display: block;
+  }
+  
+  .user-panel-input.error {
+    border: 1px solid red;
+  }
+  
+  /* Walidacja */
+  .validation-error {
+    color: red;
+    font-size: 0.9em;
+    margin-top: 5px;
+  }
+  
+  /* Lista rezerwacji */
+  .reservations-list {
+    margin: 20px 0;
+    padding: 0;
+    list-style-type: none;
+  }
+  
+  .reservations-list li {
+    margin-bottom: 20px;
+  }
+  
+  .reservations-notes {
+    margin: 10px 0;
+  }
+  
+  .reservations-notes textarea {
+    width: 100%;
+    height: 50px;
+    margin-bottom: 10px;
+  }
+  
+  /* Stylowanie dla pustych danych */
+  .no-reservations {
+    color: #666;
+    font-style: italic;
+  }
+  
+  /* Rezerwacja kontener */
+  .reservation-container {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 20px;
+  }
+  
+  .reservation-container strong {
+    margin-right: 10px;
+  }
+  
+  .reservation-notes-actions {
+    margin-top: 10px;
+    display: flex;
+    gap: 10px;
+  }
+  

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
+import "./UserPanel.css"; // Import pliku CSS
 
 const UserPanel = () => {
   const [userData, setUserData] = useState(null);
@@ -35,7 +36,6 @@ const UserPanel = () => {
     fetchReservations();
   }, []);
 
-  // Funkcja walidacji
   const validateField = (name, value) => {
     let error = "";
     if (name === "first_name" || name === "last_name") {
@@ -101,18 +101,18 @@ const UserPanel = () => {
 
   const fetchReservations = () => {
     axios
-        .get("http://127.0.0.1:8000/api/user-reservations/", {
-            headers: { Authorization: `Bearer ${localStorage.getItem("access_token")}` },
-        })
-        .then((response) => {
-            const sortedReservations = response.data.sort((a, b) => {
-                const dateA = new Date(`${a.date}T${a.start_time}`);
-                const dateB = new Date(`${b.date}T${b.start_time}`);
-                return dateA - dateB;
-            });
-            setReservations(sortedReservations);
-        })
-        .catch((error) => console.error("Błąd pobierania rezerwacji:", error));
+      .get("http://127.0.0.1:8000/api/user-reservations/", {
+        headers: { Authorization: `Bearer ${localStorage.getItem("access_token")}` },
+      })
+      .then((response) => {
+        const sortedReservations = response.data.sort((a, b) => {
+          const dateA = new Date(`${a.date}T${a.start_time}`);
+          const dateB = new Date(`${b.date}T${b.start_time}`);
+          return dateA - dateB;
+        });
+        setReservations(sortedReservations);
+      })
+      .catch((error) => console.error("Błąd pobierania rezerwacji:", error));
   };
 
   const handleDeleteReservation = (reservationId) => {
@@ -164,10 +164,8 @@ const UserPanel = () => {
     return reservationStartTime <= currentDateTime;
   });
 
-  
-
   return (
-    <div style={{ padding: "20px" }}>
+    <div className="user-panel-container">
       <h2>Panel Użytkownika</h2>
       {userData ? (
         <div>
@@ -180,89 +178,70 @@ const UserPanel = () => {
               <p><strong>Telefon:</strong> {userData.phone}</p>
               <button
                 onClick={() => setIsEditing(true)}
-                style={{
-                  padding: "8px 12px",
-                  backgroundColor: "#007bff",
-                  color: "#fff",
-                  border: "none",
-                  borderRadius: "5px",
-                }}
+                className="user-panel-button edit"
               >
                 Edytuj dane
               </button>
             </>
           ) : (
             <>
-              <label>
+              <label className="user-panel-label">
                 Imię:
                 <input
                   type="text"
                   name="first_name"
                   value={editFormData.first_name}
                   onChange={handleInputChange}
-                  style={{ margin: "5px 0", display: "block" }}
+                  className={`user-panel-input ${errors.first_name ? 'error' : ''}`}
                   required
                 />
-                {errors.first_name && <span style={{ color: "red" }}>{errors.first_name}</span>}
+                {errors.first_name && <span className="validation-error">{errors.first_name}</span>}
               </label><br/>
-              <label>
+              <label className="user-panel-label">
                 Nazwisko:
                 <input
                   type="text"
                   name="last_name"
                   value={editFormData.last_name}
                   onChange={handleInputChange}
-                  style={{ margin: "5px 0", display: "block" }}
+                  className={`user-panel-input ${errors.last_name ? 'error' : ''}`}
                   required
                 />
-                {errors.last_name && <span style={{ color: "red" }}>{errors.last_name}</span>}
+                {errors.last_name && <span className="validation-error">{errors.last_name}</span>}
               </label><br/>
-              <label>
+              <label className="user-panel-label">
                 Email:
                 <input
                   type="email"
                   name="email"
                   value={editFormData.email}
                   onChange={handleInputChange}
-                  style={{ margin: "5px 0", display: "block" }}
+                  className={`user-panel-input ${errors.email ? 'error' : ''}`}
                   required
                 />
-                {errors.email && <span style={{ color: "red" }}>{errors.email}</span>}
+                {errors.email && <span className="validation-error">{errors.email}</span>}
               </label><br/>
-              <label>
+              <label className="user-panel-label">
                 Telefon:
                 <input
                   type="tel"
                   name="phone"
                   value={editFormData.phone}
                   onChange={handleInputChange}
+                  className={`user-panel-input ${errors.phone ? 'error' : ''}`}
                   required
-                  style={{ margin: "5px 0", display: "block" }}
                 />
-                {errors.phone && <span style={{ color: "red" }}>{errors.phone}</span>}
+                {errors.phone && <span className="validation-error">{errors.phone}</span>}
               </label><br/>
               <button
                 onClick={handleSaveChanges}
-                style={{
-                  padding: "8px 12px",
-                  backgroundColor: "#28a745",
-                  color: "#fff",
-                  border: "none",
-                  borderRadius: "5px",
-                  marginRight: "10px",
-                }}
+                className="user-panel-button save"
               >
                 Zapisz zmiany
               </button>
               <button
                 onClick={() => setIsEditing(false)}
-                style={{
-                  padding: "8px 12px",
-                  backgroundColor: "#dc3545",
-                  color: "#fff",
-                  border: "none",
-                  borderRadius: "5px",
-                }}
+                className="user-panel-button cancel"
               >
                 Anuluj
               </button>
@@ -273,35 +252,22 @@ const UserPanel = () => {
         <p>Ładowanie danych użytkownika...</p>
       )}
       <h3>Twoje Rezerwacje</h3>
-      <div style={{ marginBottom: "20px" }}>
+      <div>
         <button
           onClick={() => setShowFutureReservations(true)}
-          style={{
-            marginRight: "10px",
-            padding: "8px 12px",
-            backgroundColor: showFutureReservations ? "#007bff" : "#ccc",
-            color: "#fff",
-            border: "none",
-            borderRadius: "5px",
-          }}
+          className={`user-panel-button toggle ${showFutureReservations ? 'active' : ''}`}
         >
           Nadchodzące
         </button>
         <button
           onClick={() => setShowFutureReservations(false)}
-          style={{
-            padding: "8px 12px",
-            backgroundColor: !showFutureReservations ? "#007bff" : "#ccc",
-            color: "#fff",
-            border: "none",
-            borderRadius: "5px",
-          }}
+          className={`user-panel-button toggle ${!showFutureReservations ? 'active' : ''}`}
         >
           Przeszłe
         </button>
       </div>
       {showFutureReservations ? (
-        <ul>
+        <ul className="reservations-list">
           {futureReservations.length > 0 ? (
             futureReservations.map((reservation) => (
               <li key={reservation.id}>
@@ -313,7 +279,7 @@ const UserPanel = () => {
                   {reservation.end_time.slice(3, 5)}
                 </strong>{" "}
                 | Kort: {reservation.court_name}
-                <div>
+                <div className="reservations-notes">
                   <strong>Notatki:</strong>{" "}
                   {editingNote === reservation.id ? (
                     <>
@@ -321,31 +287,16 @@ const UserPanel = () => {
                         value={editedNote}
                         onChange={(e) => setEditedNote(e.target.value)}
                         maxLength="150"
-                        style={{ width: "100%", height: "50px" }}
                       />
                       <button
                         onClick={() => saveNote(reservation.id)}
-                        style={{
-                          margin: "5px",
-                          padding: "8px 12px",
-                          backgroundColor: "#28a745",
-                          color: "#fff",
-                          border: "none",
-                          borderRadius: "5px",
-                        }}
+                        className="user-panel-button save"
                       >
                         Zapisz
                       </button>
                       <button
                         onClick={() => setEditingNote(null)}
-                        style={{
-                          margin: "5px",
-                          padding: "8px 12px",
-                          backgroundColor: "#dc3545",
-                          color: "#fff",
-                          border: "none",
-                          borderRadius: "5px",
-                        }}
+                        className="user-panel-button cancel"
                       >
                         Anuluj
                       </button>
@@ -358,14 +309,7 @@ const UserPanel = () => {
                           setEditingNote(reservation.id);
                           setEditedNote(reservation.notes || "");
                         }}
-                        style={{
-                          marginLeft: "10px",
-                          padding: "5px 10px",
-                          backgroundColor: "#007bff",
-                          color: "#fff",
-                          border: "none",
-                          borderRadius: "5px",
-                        }}
+                        className="user-panel-button edit"
                       >
                         Edytuj
                       </button>
@@ -374,25 +318,18 @@ const UserPanel = () => {
                 </div>
                 <button
                   onClick={() => handleDeleteReservation(reservation.id)}
-                  style={{
-                    marginTop: "5px",
-                    padding: "5px 10px",
-                    backgroundColor: "#dc3545",
-                    color: "#fff",
-                    border: "none",
-                    borderRadius: "5px",
-                  }}
+                  className="user-panel-button cancel"
                 >
                   Usuń
                 </button>
               </li>
             ))
           ) : (
-            <p>Brak nadchodzących rezerwacji.</p>
+            <p className="no-reservations">Brak nadchodzących rezerwacji.</p>
           )}
         </ul>
       ) : (
-        <ul>
+        <ul className="reservations-list">
           {pastReservations.length > 0 ? (
             pastReservations.map((reservation) => (
               <li key={reservation.id}>
@@ -407,7 +344,7 @@ const UserPanel = () => {
               </li>
             ))
           ) : (
-            <p>Brak przeszłych rezerwacji.</p>
+            <p className="no-reservations">Brak przeszłych rezerwacji.</p>
           )}
         </ul>
       )}

@@ -30,9 +30,9 @@
 
 .header-title {
   text-align: center;
-  margin-top: 20px; /* Dostosuj odstęp, jeśli potrzeba */
-  font-size: 2em; /* Opcjonalnie: większa czcionka */
-  color: #333; /* Opcjonalnie: kolor tekstu */
+  margin-top: 20px;
+  font-size: 2em;
+  color: #333;
 }
 
 @keyframes App-logo-spin {
