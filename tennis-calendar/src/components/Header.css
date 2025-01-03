@@ -3,7 +3,7 @@ nav {
     justify-content: space-between;
     align-items: center;
     padding: 15px 20px;
-    background-color: #874000;
+    background-color: #3a5a40;
     position: relative;
 }
 
@@ -33,19 +33,13 @@ nav button {
     font-size: 14px;
     cursor: pointer;
     font-weight: bold;
+    background-color: #588157;
+    color: white;
 }
 
-nav button:first-of-type,
-nav button:nth-of-type(2) {
-    background-color: #bc5f04;
-    color: black;
+nav button:hover {
+    background-color: #a3b18a;
 }
-
-nav button:last-of-type {
-    background-color: #f4442e;
-    color: black;
-}
-
 
 @media (max-width: 768px) {
     nav h1 {
@@ -53,7 +47,6 @@ nav button:last-of-type {
         position: static;
         transform: none;
         margin-bottom: 10px;
-        /* width: 100%; */
     }
 
     nav div {

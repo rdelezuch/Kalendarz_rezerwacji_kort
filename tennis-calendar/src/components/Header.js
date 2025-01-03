@@ -1,7 +1,7 @@
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "./AuthContext"; // Importuj kontekst
-import "./Header.css"; // Import pliku CSS
+import { useAuth } from "./AuthContext";
+import "./Header.css";
 
 const Header = () => {
     const { isAuthenticated, logout, openAuthModal } = useAuth();

@@ -56,7 +56,7 @@ const Calendar = () => {
         fetchAllCourts();
         fetchEvents("all");
 
-        // Domyślne kolorowanie przycisków FullCalendar
+        // Domyślne ustawienie aktywnej klasy
         const buttons = document.querySelectorAll('.fc-toolbar .fc-button');
         const allCourtsButton = Array.from(buttons).find((button) => button.textContent === 'Wszystkie Korty');
         if (allCourtsButton) {
@@ -79,13 +79,14 @@ const Calendar = () => {
         setSelectedCourt(selected);
         fetchEvents(selected);
     
-        // Zmiana stylu aktywnego przycisku
+        // Usunięcie klasy aktywnej z wszystkich przycisków
         const buttons = document.querySelectorAll('.fc-toolbar .fc-button');
         buttons.forEach((button) => {
             button.classList.remove('active-button');
         });
-    
-        const activeButton = Array.from(buttons).find((button) =>
+
+        // Dodanie klasy aktywnej do aktualnie wybranego przycisku
+        const activeButton = Array.from(buttons).find((button) => 
             button.textContent === (selected === 'all' ? 'Wszystkie Korty' : allCourts.find(court => court.id === selected)?.name)
         );
         if (activeButton) {
@@ -266,24 +267,6 @@ const Calendar = () => {
 
     return (
         <>
-            {/* Rozwijana lista z wyborem kortu */}
-            {/* <div style={{ marginBottom: "20px" }}>
-                <label htmlFor="court-select">Wybierz kort:</label>
-                <select
-                    id="court-select"
-                    value={selectedCourt}
-                    onChange={handleCourtChange}
-                    style={{ marginLeft: "10px", padding: "8px", borderRadius: "5px" }}
-                >
-                    <option value="all">Wszystkie korty</option>
-                    {allCourts.map((court) => (
-                        <option key={court.id} value={court.id}>
-                            {court.name}
-                        </option>
-                    ))}
-                </select>
-            </div> */}
-
             <FullCalendar
                 plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
                 locale="pl"
@@ -357,74 +340,92 @@ const Calendar = () => {
 
             {/* Modal dla rezerwacji */}
             <Modal isOpen={modalIsOpen} onRequestClose={closeModal} ariaHideApp={false}>
-                <form onSubmit={handleSubmit}>
-                    <h3>Rezerwacja Terminu</h3>
-                    <label>Data: {formData.date}</label><br />
-                    <label>
-                        Kort:
-                        {selectedCourt === 'all'
-                        ? (<select name="court" value={formData.court} onChange={handleInputChange} required>
-                            <option value="">Wybierz kort</option>
-                            {availableCourts.map(court => (
-                                <option key={court.id} value={court.id}>{court.id}</option>
-                            ))}
-                        </select>)
-                        : (<label> {selectedCourt}</label>)}
-                    </label><br />
-                    <label>
-                        Godzina Startu: {formData.startTime}
-                    </label><br />
-                    <label>
-                        Czas wynajmu:
-                        <select
-                            name="duration"
-                            value={formData.duration}
-                            onChange={(e) =>
-                                setFormData({
-                                    ...formData,
-                                    duration: e.target.value,
-                                })
-                            }
-                            required
-                        >
-                            <option value="">Wybierz czas trwania</option>
-                            <option value="1">1 godzina</option>
-                            <option value="2">2 godziny</option>
-                            <option value="3">3 godziny</option>
-                        </select>
-                    </label><br />
-                    <label>
-                        Notatki (opcjonalne, max 150 znaków):
-                        <br /><textarea
-                            name="notes"
-                            value={formData.notes}
-                            onChange={handleInputChange}
-                            maxLength="150"
-                            placeholder="Dodaj notatki do rezerwacji..."
-                        />
-                    </label><br />
-                    <button type="submit">Rezerwuj</button>
-                    <button type="button" onClick={closeModal}>Anuluj</button>
-                </form>
+                <div className="reservation-modal-container">
+                    <h3 className="reservation-modal-title">Rezerwacja Terminu</h3>
+                    <form onSubmit={handleSubmit}>
+                        <div className="reservation-modal-field">
+                            <label>Data:</label>
+                            <span>{formData.date}</span>
+                        </div>
+                        <div className="reservation-modal-field">
+                            <label>Kort:</label>
+                            {selectedCourt === 'all' ? (
+                                <select
+                                    name="court"
+                                    value={formData.court}
+                                    onChange={handleInputChange}
+                                    required
+                                    className="reservation-select"
+                                >
+                                    <option value="">Wybierz kort</option>
+                                    {availableCourts.map((court) => (
+                                        <option key={court.id} value={court.id}>{court.id}</option>
+                                    ))}
+                                </select>
+                            ) : (
+                                <span>{selectedCourt}</span>
+                            )}
+                        </div>
+                        <div className="reservation-modal-field">
+                            <label>Godzina Startu:</label>
+                            <span>{formData.startTime}</span>
+                        </div>
+                        <div className="reservation-modal-field">
+                            <label>Czas wynajmu:</label>
+                            <select
+                                name="duration"
+                                value={formData.duration}
+                                onChange={(e) =>
+                                    setFormData({
+                                        ...formData,
+                                        duration: e.target.value,
+                                    })
+                                }
+                                required
+                                className="reservation-select"
+                            >
+                                <option value="">Wybierz czas trwania</option>
+                                <option value="1">1 godzina</option>
+                                <option value="2">2 godziny</option>
+                                <option value="3">3 godziny</option>
+                            </select>
+                        </div>
+                        <div className="reservation-modal-field">
+                            <label>Notatki (opcjonalne, max 150 znaków):</label>
+                            <textarea
+                                name="notes"
+                                value={formData.notes}
+                                onChange={handleInputChange}
+                                maxLength="150"
+                                placeholder="Dodaj notatki do rezerwacji..."
+                                className="reservation-textarea"
+                            />
+                        </div>
+                        <div className="reservation-modal-actions">
+                            <button type="submit" className="reservation-modal-button confirm">Rezerwuj</button>
+                            <button type="button" onClick={closeModal} className="reservation-modal-button cancel">Anuluj</button>
+                        </div>
+                    </form>
+                </div>
             </Modal>
             {/* Modal logowania */}
             <AuthModal />
             {/* Modal Administratora*/}
             <Modal isOpen={adminModalIsOpen} onRequestClose={() => setAdminModalIsOpen(false)} ariaHideApp={false}>
-                <h3>Szczegóły Rezerwacji</h3>
+                <h3 className="reservation-details-title">Szczegóły Rezerwacji</h3>
                 {selectedEvent && selectedEvent.length > 0 ? (
                     <ul>
                         {selectedEvent
                         .sort((a, b) => a.court_id - b.court_id)
-                        .map((reservation) => (
+                        .map((reservation, index) => (
                             <li key={reservation.id}>
                                 <strong>Kort:</strong> {reservation.court_id} <br />
-                                <strong>Godzina: </strong>
+                                <strong>Godzina:</strong>
                                 {new Date(new Date(reservation.start_time).getTime() + 60 * 60 * 1000)
                                     .toISOString()
                                     .split("T")[1]
-                                    .slice(0, 5)} 
-                                - 
+                                    .slice(0, 5)}{" "}
+                                -{" "}
                                 {new Date(new Date(reservation.end_time).getTime() + 60 * 60 * 1000)
                                     .toISOString()
                                     .split("T")[1]
@@ -439,21 +440,24 @@ const Calendar = () => {
                                 >
                                     Usuń rezerwację
                                 </button>
+                                {index < selectedEvent.length - 1 && <div className="reservation-divider"></div>}
                             </li>
                         ))}
-                    </ul>
+                </ul>
                 ) : (
                     <p>Brak rezerwacji.</p>
                 )}
-                <button
-                    onClick={() => {
-                        setAdminModalIsOpen(false);
-                        setModalIsOpen(true);
-                    }}
-                    className="add-reservation-admin-btn"
-                >
-                    Dodaj nową rezerwację
-                </button>
+                <div className="new-reservation-button-container">
+                    <button
+                        onClick={() => {
+                            setAdminModalIsOpen(false);
+                            setModalIsOpen(true);
+                        }}
+                        className="add-reservation-admin-btn"
+                    >
+                        Dodaj nową rezerwację
+                    </button>
+                </div>
             </Modal>
         </>
     );

@@ -28,6 +28,13 @@
   color: #61dafb;
 }
 
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #dad7cd;
+  color: #000000;
+}
+
 .header-title {
   text-align: center;
   margin-top: 20px;

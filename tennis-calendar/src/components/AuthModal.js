@@ -64,6 +64,7 @@ const AuthModal = () => {
                     login();
                     alert("Zalogowano pomyślnie!");
                     closeAuthModal();
+                    window.location.reload();
                 })
                 .catch((error) => {
                     console.error("Błąd logowania:", error);
@@ -179,7 +180,7 @@ const AuthModal = () => {
                                 required
                             />
                         </label>
-                        <label>
+                        <div className="checkbox-container">
                             <input
                                 type="checkbox"
                                 name="agreement"
@@ -187,13 +188,17 @@ const AuthModal = () => {
                                 onChange={handleInputChange}
                                 required
                             />
-                            Akceptuję regulamin oraz zgodę na RODO
-                        </label>
+                            <label>
+                                Akceptuję regulamin oraz zgodę na RODO
+                            </label>
+                        </div>
                     </>
                 )}
-                <button type="submit">{isLogin ? "Zaloguj się" : "Zarejestruj się"}</button>
+                <div className="button-group">
+                    <button type="submit">{isLogin ? "Zaloguj się" : "Zarejestruj się"}</button>
+                    <button type="button" onClick={closeAuthModal}>Anuluj</button>
+                </div>
             </form>
-            <button onClick={closeAuthModal}>Anuluj</button>
         </Modal>
     );
 };

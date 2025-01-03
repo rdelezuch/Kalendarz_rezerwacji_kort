@@ -39,7 +39,7 @@ const UserPanel = () => {
   const validateField = (name, value) => {
     let error = "";
     if (name === "first_name" || name === "last_name") {
-      const namePattern = /^[A-Za-zÀ-ÿ\s-]+$/;
+      const namePattern = /^[A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż\s-]+$/;
       if (!namePattern.test(value) && value !== "") {
         error = "Pole może zawierać tylko litery, spacje i myślniki.";
       }
@@ -166,188 +166,203 @@ const UserPanel = () => {
 
   return (
     <div className="user-panel-container">
-      <h2>Panel Użytkownika</h2>
-      {userData ? (
-        <div>
-          <h3>Dane Użytkownika</h3>
-          {!isEditing ? (
-            <>
-              <p><strong>Imię:</strong> {userData.first_name}</p>
-              <p><strong>Nazwisko:</strong> {userData.last_name}</p>
-              <p><strong>Email:</strong> {userData.email}</p>
-              <p><strong>Telefon:</strong> {userData.phone}</p>
-              <button
-                onClick={() => setIsEditing(true)}
-                className="user-panel-button edit"
-              >
-                Edytuj dane
-              </button>
-            </>
-          ) : (
-            <>
-              <label className="user-panel-label">
-                Imię:
-                <input
-                  type="text"
-                  name="first_name"
-                  value={editFormData.first_name}
-                  onChange={handleInputChange}
-                  className={`user-panel-input ${errors.first_name ? 'error' : ''}`}
-                  required
-                />
-                {errors.first_name && <span className="validation-error">{errors.first_name}</span>}
-              </label><br/>
-              <label className="user-panel-label">
-                Nazwisko:
-                <input
-                  type="text"
-                  name="last_name"
-                  value={editFormData.last_name}
-                  onChange={handleInputChange}
-                  className={`user-panel-input ${errors.last_name ? 'error' : ''}`}
-                  required
-                />
-                {errors.last_name && <span className="validation-error">{errors.last_name}</span>}
-              </label><br/>
-              <label className="user-panel-label">
-                Email:
-                <input
-                  type="email"
-                  name="email"
-                  value={editFormData.email}
-                  onChange={handleInputChange}
-                  className={`user-panel-input ${errors.email ? 'error' : ''}`}
-                  required
-                />
-                {errors.email && <span className="validation-error">{errors.email}</span>}
-              </label><br/>
-              <label className="user-panel-label">
-                Telefon:
-                <input
-                  type="tel"
-                  name="phone"
-                  value={editFormData.phone}
-                  onChange={handleInputChange}
-                  className={`user-panel-input ${errors.phone ? 'error' : ''}`}
-                  required
-                />
-                {errors.phone && <span className="validation-error">{errors.phone}</span>}
-              </label><br/>
-              <button
-                onClick={handleSaveChanges}
-                className="user-panel-button save"
-              >
-                Zapisz zmiany
-              </button>
-              <button
-                onClick={() => setIsEditing(false)}
-                className="user-panel-button cancel"
-              >
-                Anuluj
-              </button>
-            </>
-          )}
-        </div>
-      ) : (
-        <p>Ładowanie danych użytkownika...</p>
-      )}
-      <h3>Twoje Rezerwacje</h3>
-      <div>
-        <button
-          onClick={() => setShowFutureReservations(true)}
-          className={`user-panel-button toggle ${showFutureReservations ? 'active' : ''}`}
-        >
-          Nadchodzące
-        </button>
-        <button
-          onClick={() => setShowFutureReservations(false)}
-          className={`user-panel-button toggle ${!showFutureReservations ? 'active' : ''}`}
-        >
-          Przeszłe
-        </button>
-      </div>
-      {showFutureReservations ? (
-        <ul className="reservations-list">
-          {futureReservations.length > 0 ? (
-            futureReservations.map((reservation) => (
-              <li key={reservation.id}>
-                <strong>
-                  {new Date(reservation.date).toLocaleDateString("pl-PL")}{" "}
-                  {String(parseInt(reservation.start_time.slice(0, 2)) + 1).padStart(2, "0")}:
-                  {reservation.start_time.slice(3, 5)}-
-                  {String(parseInt(reservation.end_time.slice(0, 2)) + 1).padStart(2, "0")}:
-                  {reservation.end_time.slice(3, 5)}
-                </strong>{" "}
-                | Kort: {reservation.court_name}
-                <div className="reservations-notes">
-                  <strong>Notatki:</strong>{" "}
-                  {editingNote === reservation.id ? (
-                    <>
-                      <textarea
-                        value={editedNote}
-                        onChange={(e) => setEditedNote(e.target.value)}
-                        maxLength="150"
-                      />
-                      <button
-                        onClick={() => saveNote(reservation.id)}
-                        className="user-panel-button save"
-                      >
-                        Zapisz
-                      </button>
-                      <button
-                        onClick={() => setEditingNote(null)}
-                        className="user-panel-button cancel"
-                      >
-                        Anuluj
-                      </button>
-                    </>
-                  ) : (
-                    <>
-                      {reservation.notes || "Brak notatek"}
-                      <button
-                        onClick={() => {
-                          setEditingNote(reservation.id);
-                          setEditedNote(reservation.notes || "");
-                        }}
-                        className="user-panel-button edit"
-                      >
-                        Edytuj
-                      </button>
-                    </>
-                  )}
+        <h2 className="user-panel-title">Panel Użytkownika</h2>
+        <div className="user-panel-card">
+            <div className="user-data-section">
+                <h3>Dane Użytkownika</h3>
+                {userData ? (
+                    !isEditing ? (
+                        <>
+                            <p><strong>Imię:</strong> {userData.first_name}</p>
+                            <p><strong>Nazwisko:</strong> {userData.last_name}</p>
+                            <p><strong>Email:</strong> {userData.email}</p>
+                            <p><strong>Telefon:</strong> {userData.phone}</p>
+                            <button
+                                onClick={() => setIsEditing(true)}
+                                className="user-panel-button edit"
+                            >
+                                Edytuj dane
+                            </button>
+                        </>
+                    ) : (
+                        <>
+                            <label className="user-panel-label">
+                                Imię:
+                                <input
+                                    type="text"
+                                    name="first_name"
+                                    value={editFormData.first_name}
+                                    onChange={handleInputChange}
+                                    className={`user-panel-input ${errors.first_name ? 'error' : ''}`}
+                                    required
+                                /><br/>
+                                {errors.first_name && <span className="validation-error">{errors.first_name}</span>}
+                            </label>
+                            <label className="user-panel-label">
+                                Nazwisko:
+                                <input
+                                    type="text"
+                                    name="last_name"
+                                    value={editFormData.last_name}
+                                    onChange={handleInputChange}
+                                    className={`user-panel-input ${errors.last_name ? 'error' : ''}`}
+                                    required
+                                /><br/>
+                                {errors.last_name && <span className="validation-error">{errors.last_name}</span>}
+                            </label>
+                            <label className="user-panel-label">
+                                Email:
+                                <input
+                                    type="email"
+                                    name="email"
+                                    value={editFormData.email}
+                                    onChange={handleInputChange}
+                                    className={`user-panel-input ${errors.email ? 'error' : ''}`}
+                                    required
+                                /><br/>
+                                {errors.email && <span className="validation-error">{errors.email}</span>}
+                            </label>
+                            <label className="user-panel-label">
+                                Telefon:
+                                <input
+                                    type="tel"
+                                    name="phone"
+                                    value={editFormData.phone}
+                                    onChange={handleInputChange}
+                                    className={`user-panel-input ${errors.phone ? 'error' : ''}`}
+                                    required
+                                /><br/>
+                                {errors.phone && <span className="validation-error">{errors.phone}</span>}
+                            </label>
+                            <div className="button-group">
+                              <button
+                                  onClick={handleSaveChanges}
+                                  className="user-panel-button save"
+                              >
+                                  Zapisz zmiany
+                              </button>
+                              <button
+                                  onClick={() => {
+                                      setEditFormData({
+                                          first_name: userData.first_name,
+                                          last_name: userData.last_name,
+                                          email: userData.email,
+                                          phone: userData.phone,
+                                      });
+                                      setErrors({});
+                                      setIsEditing(false);
+                                  }}
+                                  className="user-panel-button cancel"
+                              >
+                                  Anuluj
+                              </button>
+                            </div>
+                            
+                        </>
+                    )
+                ) : (
+                    <p>Ładowanie danych użytkownika...</p>
+                )}
+            </div>
+
+            <div className="reservations-section">
+                <h3>Twoje Rezerwacje</h3>
+                <div className="reservations-toggle-buttons">
+                    <button
+                        onClick={() => setShowFutureReservations(true)}
+                        className={`user-panel-button toggle ${showFutureReservations ? 'active' : ''}`}
+                    >
+                        Nadchodzące
+                    </button>
+                    <button
+                        onClick={() => setShowFutureReservations(false)}
+                        className={`user-panel-button toggle ${!showFutureReservations ? 'active' : ''}`}
+                    >
+                        Przeszłe
+                    </button>
                 </div>
-                <button
-                  onClick={() => handleDeleteReservation(reservation.id)}
-                  className="user-panel-button cancel"
-                >
-                  Usuń
-                </button>
-              </li>
-            ))
-          ) : (
-            <p className="no-reservations">Brak nadchodzących rezerwacji.</p>
-          )}
-        </ul>
-      ) : (
-        <ul className="reservations-list">
-          {pastReservations.length > 0 ? (
-            pastReservations.map((reservation) => (
-              <li key={reservation.id}>
-                <strong>
-                  {new Date(reservation.date).toLocaleDateString("pl-PL")}{" "}
-                  {String(parseInt(reservation.start_time.slice(0, 2)) + 1).padStart(2, "0")}:
-                  {reservation.start_time.slice(3, 5)}-
-                  {String(parseInt(reservation.end_time.slice(0, 2)) + 1).padStart(2, "0")}:
-                  {reservation.end_time.slice(3, 5)}
-                </strong>{" "}
-                | Kort: {reservation.court_name}
-              </li>
-            ))
-          ) : (
-            <p className="no-reservations">Brak przeszłych rezerwacji.</p>
-          )}
-        </ul>
-      )}
+                <ul className="reservations-list">
+                    {showFutureReservations
+                        ? futureReservations.length > 0
+                            ? futureReservations.map((reservation) => (
+                                <li key={reservation.id}>
+                                    <strong>
+                                        {new Date(reservation.date).toLocaleDateString("pl-PL")}{" "}
+                                        {String(parseInt(reservation.start_time.slice(0, 2)) + 1).padStart(2, "0")}:
+                                        {reservation.start_time.slice(3, 5)}-
+                                        {String(parseInt(reservation.end_time.slice(0, 2)) + 1).padStart(2, "0")}:
+                                        {reservation.end_time.slice(3, 5)}
+                                    </strong>{" "}
+                                    | {reservation.court_name}
+                                    <div className="reservations-notes">
+                                        <strong>Notatki:</strong>{" "}
+                                        {editingNote === reservation.id ? (
+                                            <>
+                                                <textarea
+                                                    value={editedNote}
+                                                    onChange={(e) => setEditedNote(e.target.value)}
+                                                    maxLength="150"
+                                                />
+                                                <div className="button-group">
+                                                  <button
+                                                      onClick={() => saveNote(reservation.id)}
+                                                      className="user-panel-button save"
+                                                  >
+                                                      Zapisz
+                                                  </button>
+                                                  <button
+                                                      onClick={() => setEditingNote(null)}
+                                                      className="user-panel-button cancel"
+                                                  >
+                                                      Anuluj
+                                                  </button>
+                                                </div>
+                                            </>
+                                        ) : (
+                                            <>
+                                                {reservation.notes || "Brak notatek"}
+                                                
+                                            </>
+                                        )}
+                                    </div>
+                                    <div className="button-group">
+                                      <button
+                                          onClick={() => handleDeleteReservation(reservation.id)}
+                                          className="user-panel-button cancel"
+                                      >
+                                          Usuń Rezerwację
+                                      </button>
+                                      <button
+                                          onClick={() => {
+                                              setEditingNote(reservation.id);
+                                              setEditedNote(reservation.notes || "");
+                                          }}
+                                          className="user-panel-button edit"
+                                      >
+                                          Edytuj notatkę
+                                      </button>
+                                    </div>
+                                </li>
+                            ))
+                            : <p className="no-reservations">Brak nadchodzących rezerwacji.</p>
+                        : pastReservations.length > 0
+                            ? pastReservations.map((reservation) => (
+                                <li key={reservation.id}>
+                                    <strong>
+                                        {new Date(reservation.date).toLocaleDateString("pl-PL")}{" "}
+                                        {String(parseInt(reservation.start_time.slice(0, 2)) + 1).padStart(2, "0")}:
+                                        {reservation.start_time.slice(3, 5)}-
+                                        {String(parseInt(reservation.end_time.slice(0, 2)) + 1).padStart(2, "0")}:
+                                        {reservation.end_time.slice(3, 5)}
+                                    </strong>{" "}
+                                    | {reservation.court_name}
+                                </li>
+                            ))
+                            : <p className="no-reservations">Brak przeszłych rezerwacji.</p>
+                    }
+                </ul>
+            </div>
+        </div>
     </div>
   );
 };

@@ -9,7 +9,7 @@ export const AuthProvider = ({ children }) => {
 
     const login = () => {
         setIsAuthenticated(true);
-        setAuthModalOpen(false); // Zamknięcie modala po zalogowaniu
+        setAuthModalOpen(false);
     };
 
     const logout = (navigate) => {
@@ -20,7 +20,7 @@ export const AuthProvider = ({ children }) => {
     };
 
     const openAuthModal = (mode = "login") => {
-        setAuthMode(mode); // Ustaw tryb logowania lub rejestracji
+        setAuthMode(mode);
         setAuthModalOpen(true);
     };
 
