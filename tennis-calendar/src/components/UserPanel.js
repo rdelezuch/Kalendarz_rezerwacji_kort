@@ -153,16 +153,23 @@ const UserPanel = () => {
   };
 
   const currentDateTime = new Date();
+  currentDateTime.setMinutes(0, 0, 0);
 
   const futureReservations = reservations.filter((reservation) => {
     const reservationStartTime = new Date(`${reservation.date}T${reservation.start_time}`);
-    return reservationStartTime > currentDateTime;
+    return reservationStartTime >= currentDateTime;
   });
 
-  const pastReservations = reservations.filter((reservation) => {
-    const reservationStartTime = new Date(`${reservation.date}T${reservation.start_time}`);
-    return reservationStartTime <= currentDateTime;
-  });
+  const pastReservations = reservations
+    .filter((reservation) => {
+        const reservationStartTime = new Date(`${reservation.date}T${reservation.start_time}`);
+        return reservationStartTime < currentDateTime;
+    })
+    .sort((a, b) => {
+        const dateA = new Date(`${a.date}T${a.start_time}`);
+        const dateB = new Date(`${b.date}T${b.start_time}`);
+        return dateB - dateA;
+    });
 
   return (
     <div className="user-panel-container">

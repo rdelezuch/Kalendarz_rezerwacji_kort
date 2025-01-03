@@ -320,14 +320,22 @@ const Calendar = () => {
                 allDaySlot={false}
                 selectable={true}
                 expandRows={true}
-                eventClick={handleEventClick}
                 eventClassNames={(arg) => {
+                    const now = new Date();
+                    now.setHours(now.getHours() + 2);
+                    const eventEnd = new Date(arg.event.end);
+                    if (eventEnd < now) {
+                        return ['past-event'];
+                    }
                     if (arg.event.title === "Kort zajęty" || arg.event.title === "Wszystkie zajęte") {
-                        return ["event-occupied"];
+                        return ['event-occupied'];
                     } else if (arg.event.title === "Kort dostępny" || arg.event.title === "Dostępne korty") {
-                        return ["event-available"];
+                        return ['event-available'];
                     }
                     return [];
+                }}
+                eventClick={(info) => {
+                    handleEventClick(info);
                 }}
             />
 

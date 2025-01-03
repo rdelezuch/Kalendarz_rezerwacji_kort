@@ -1,8 +1,8 @@
 .greyed-out-day {
-    background-color: #e0e0e0 !important; /* Szare tło */
-    color: #a0a0a0 !important; /* Szary tekst */
-    opacity: 0.7; /* Przygaszenie */
-    pointer-events: none; /* Brak interakcji */
+    background-color: #e0e0e0 !important;
+    color: #a0a0a0 !important;
+    opacity: 0.7;
+    pointer-events: none;
 }
 
 .fc-event {
@@ -13,6 +13,7 @@
     font-size: 1em;
     padding: 4px;
     white-space: normal;
+    border-color: #344e41
 }
 
 .fc-toolbar {
@@ -87,8 +88,16 @@
 
 /* Klasa dla dostępnych godzin */
 .event-available {
-    background-color: #588157; /* Dostępne */
+    background-color: #588157;
     color: white;
+}
+
+/* Przycienione godziny dnia aktualnego */
+.past-event {
+    background-color: #d3d3d3 !important;
+    color: #a0a0a0 !important;
+    pointer-events: none;
+    opacity: 0.9;
 }
 
 .fc-daygrid-event-dot {
@@ -213,7 +222,7 @@
 /* Styl głównego kontenera modala */
 .reservation-modal-container {
     padding: 20px;
-    background-color: #dad7cd; /* Kolor tła */
+    background-color: #dad7cd;
     border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     font-family: Arial, sans-serif;
