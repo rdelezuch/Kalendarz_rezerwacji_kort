@@ -57,7 +57,6 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-# Dokładna konfiguracja CORS
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
@@ -157,7 +156,7 @@ EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'tenisrezerwacja@gmail.com'
 EMAIL_HOST_PASSWORD = 'hlix pkke givl xxuo'
 
-# Wskazanie niestandardowego modelu użytkownika
+# Niestandardowy model użytkownika
 AUTH_USER_MODEL = 'accounts.CustomUser'
 
 REST_FRAMEWORK = {

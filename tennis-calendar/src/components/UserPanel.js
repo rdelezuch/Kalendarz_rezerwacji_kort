@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import "./UserPanel.css"; // Import pliku CSS
+import "./UserPanel.css";
 
 const UserPanel = () => {
   const [userData, setUserData] = useState(null);

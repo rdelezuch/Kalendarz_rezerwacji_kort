@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import Modal from "react-modal";
 import axios from "axios";
 import { useAuth } from "./AuthContext";
-import "./AuthModal.css"; // Import pliku CSS
+import "./AuthModal.css";
 
 const AuthModal = () => {
     const [formData, setFormData] = useState({

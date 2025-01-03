@@ -51,12 +51,11 @@ const Calendar = () => {
         .catch(error => console.error("Błąd pobierania danych:", error));
     };
 
-    // Pobieranie wydarzeń i sprawdzanie stanu logowania po załadowaniu komponentu
     useEffect(() => {
         fetchAllCourts();
         fetchEvents("all");
 
-        // Domyślne ustawienie aktywnej klasy
+        // Domyślne ustawienie stylu aktywnego buttona (nie działało przez CSS)
         const buttons = document.querySelectorAll('.fc-toolbar .fc-button');
         const allCourtsButton = Array.from(buttons).find((button) => button.textContent === 'Wszystkie Korty');
         if (allCourtsButton) {
@@ -93,8 +92,6 @@ const Calendar = () => {
             activeButton.classList.add('active-button');
         }
     };
-    
-    
 
     // Obsługa kliknięcia na istniejące wydarzenie
     const handleEventClick = (info) => {
@@ -128,7 +125,6 @@ const Calendar = () => {
                     alert("Nie udało się pobrać szczegółów rezerwacji.");
                 });
         } else {
-            // Obsługa zwykłego użytkownika
             if (!isAuthenticated) {
                 openAuthModal();
                 return;
@@ -281,9 +277,6 @@ const Calendar = () => {
                 }}
                 slotDuration="01:00:00"
                 slotLabelInterval="01:00"
-                //slotEventOverlap={false}
-                //height="auto"
-                //contentHeight="auto"
                 aspectRatio={calendarViewRatio}
                 customButtons={{
                     allCourts: {
