@@ -28,11 +28,18 @@
   color: #61dafb;
 }
 
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #dad7cd;
+  color: #000000;
+}
+
 .header-title {
   text-align: center;
-  margin-top: 20px; /* Dostosuj odstęp, jeśli potrzeba */
-  font-size: 2em; /* Opcjonalnie: większa czcionka */
-  color: #333; /* Opcjonalnie: kolor tekstu */
+  margin-top: 20px;
+  font-size: 2em;
+  color: #333;
 }
 
 @keyframes App-logo-spin {
@@ -44,7 +51,6 @@
   }
 }
 
-/* Styl kontenera modala */
 .ReactModal__Content {
   top: 50% !important;
   left: 50% !important;
@@ -60,7 +66,6 @@
   padding: 20px!important;
 }
 
-/* Styl nakładki modala */
 .ReactModal__Overlay {
   z-index: 1040 !important;
   background-color: rgba(0, 0, 0, 0.5) !important;

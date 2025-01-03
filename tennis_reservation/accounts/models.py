@@ -34,7 +34,7 @@ class CustomUser(AbstractUser):
                 message="Numer telefonu musi być w formacie: '+48123456789' lub '123456789' (bez spacji i znaków specjalnych)."
             )
         ],
-        blank=False,  # Pole wymagane
+        blank=False,
         null=False
     )
 

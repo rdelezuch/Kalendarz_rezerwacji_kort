@@ -98,20 +98,18 @@ def get_all_courts(request):
 #@permission_classes([IsAuthenticated])
 def check_availability(request):
     try:
-        # Pobranie danych z żądania
         data = json.loads(request.body)
         start_time = data.get('start_time')
         end_time = data.get('end_time')
         court_id = data.get('court')
 
-        # Walidacja wymaganych parametrów
         if not start_time or not end_time or not court_id:
             return JsonResponse({'error': 'Brak wymaganych parametrów: start_time, end_time, court'}, status=400)
 
         # Sprawdzenie kolizji rezerwacji
         occupied_reservations = Reservation.objects.filter(
-            Q(start_time__lt=end_time, end_time__gt=start_time),  # Kolizja czasowa
-            court_id=court_id  # Sprawdzenie dla tego samego kortu
+            Q(start_time__lt=end_time, end_time__gt=start_time),
+            court_id=court_id
         )
 
         if occupied_reservations.exists():

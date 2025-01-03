@@ -1,84 +1,38 @@
 import React from "react";
-import { Link } from "react-router-dom";
-import { useAuth } from "./AuthContext"; // Importuj kontekst
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "./AuthContext";
+import "./Header.css";
 
 const Header = () => {
-    const { isAuthenticated, logout, openAuthModal, setAuthMode } = useAuth(); // Użyj kontekstu
+    const { isAuthenticated, logout, openAuthModal } = useAuth();
+    const navigate = useNavigate();
 
     return (
-        <nav style={{ display: "flex", justifyContent: "space-between", padding: "10px", backgroundColor: "#f0f0f0" }}>
+        <nav>
             <h1>Rezerwacja Kortów XYZ</h1>
             <div>
                 {isAuthenticated ? (
                     <>
                         <Link to="/">
-                            <button
-                                style={{
-                                    margin: "0 10px",
-                                    padding: "8px 12px",
-                                    backgroundColor: "#007bff",
-                                    color: "#fff",
-                                    border: "none",
-                                    borderRadius: "5px",
-                                }}
-                            >
-                                Strona Główna
-                            </button>
+                            <button>Strona Główna</button>
                         </Link>
                         <Link to="/user-panel">
-                            <button
-                                style={{
-                                    margin: "0 10px",
-                                    padding: "8px 12px",
-                                    backgroundColor: "#007bff",
-                                    color: "#fff",
-                                    border: "none",
-                                    borderRadius: "5px",
-                                }}
-                            >
-                                Panel Użytkownika
-                            </button>
+                            <button>Panel Użytkownika</button>
                         </Link>
-                        <button
-                            onClick={logout}
-                            style={{
-                                margin: "0 10px",
-                                padding: "8px 12px",
-                                backgroundColor: "#dc3545",
-                                color: "#fff",
-                                border: "none",
-                                borderRadius: "5px",
-                            }}
-                        >
+                        <button onClick={() => logout(navigate)}>
                             Wyloguj się
                         </button>
                     </>
                 ) : (
                     <>
                         <button
-                            onClick={() => openAuthModal("login")}
-                            style={{
-                                margin: "0 10px",
-                                padding: "8px 12px",
-                                backgroundColor: "#28a745",
-                                color: "#fff",
-                                border: "none",
-                                borderRadius: "5px",
-                            }}
-                        >
+                            type="button"
+                            onClick={() => openAuthModal("login")}>
                             Zaloguj się
                         </button>
                         <button
-                            onClick={() => openAuthModal("register")}
-                            style={{
-                                margin: "0 10px",
-                                padding: "8px 12px",
-                                backgroundColor: "#17a2b8",
-                                color: "#fff",
-                                border: "none",
-                                borderRadius: "5px",
-                            }}
-                        >
+                            type="button"
+                            onClick={() => openAuthModal("register")}>
                             Zarejestruj się
                         </button>
                     </>

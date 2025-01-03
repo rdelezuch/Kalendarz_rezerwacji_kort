@@ -1,0 +1,92 @@
+.modal h2 {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.modal form {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: center;
+    background-color: #a3b18a;
+    padding: 20px;
+    border-radius: 10px;
+    max-width: 400px;
+    margin: auto;
+}
+
+.modal label {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    width: 90%;
+    font-weight: bold;
+}
+
+.modal label [type="checkbox"] {
+    margin: 0;
+}
+
+.modal input {
+    width: 90%;
+    padding: 10px;
+    border: 1px solid #a3b18a;
+    border-radius: 5px;
+    background-color: #dad7cd;
+}
+
+.modal input[type="checkbox"] {
+    width: auto;
+    margin-right: 5px;
+}
+
+.checkbox-container {
+    display: flex;
+    align-items: center;
+    text-align: center;
+}
+
+.modal p {
+    color: red;
+    font-size: 11px;
+}
+
+.modal button {
+    padding: 10px 15px;
+    border: none;
+    border-radius: 5px;
+    background-color: #588157;
+    color: #fff;
+    cursor: pointer;
+}
+
+.modal button[type="submit"] {
+    background-color: #588157;
+}
+
+.modal button:last-of-type {
+    background-color: #3a5a40;
+}
+
+.modal .button-group {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    align-items: center;
+}
+
+.modal button:hover {
+    opacity: 0.9;
+}
+
+.ReactModal__Content {
+    background-color: #dad7cd !important;
+    border-radius: 10px !important;
+    padding: 20px !important;
+    border: none !important;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2) !important;
+}
+
+.ReactModal__Overlay {
+    background-color: rgba(0, 0, 0, 0.5) !important;
+}

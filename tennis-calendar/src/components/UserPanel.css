@@ -1,0 +1,228 @@
+/* Stylizacja głównego kontenera */
+.user-panel-container {
+    padding: 20px;
+    background-color: #dad7cd;
+    font-family: Arial, sans-serif;
+}
+
+/* Nagłówek */
+.user-panel-title {
+    text-align: center;
+    font-size: 29px;
+    margin-bottom: 20px;
+}
+
+/* Stylizacja wspólnej planszy */
+.user-panel-card {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 20px;
+    background-color: #a3b18a;
+    border-radius: 10px;
+}
+
+/* Sekcja danych użytkownika */
+.user-data-section {
+    width: 45%;
+    background-color: #588157;
+    padding: 20px;
+    border-radius: 10px;
+}
+
+.user-data-section h3 {
+    font-size: 23px;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+.user-data-section p {
+    margin: 10px 0;
+}
+
+.user-panel-button.edit {
+    background-color: #3a5a40;
+    color: white;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.user-panel-button.edit:hover {
+    opacity: 0.9;
+}
+
+/* Sekcja rezerwacji */
+.reservations-section {
+    width: 45%;
+    background-color: #588157;
+    padding: 20px;
+    border-radius: 10px;
+    overflow-y: auto;
+    max-height: 600px;
+}
+
+.reservations-section h3 {
+    font-size: 23px;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+.reservations-toggle-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.reservations-toggle-buttons button {
+    background-color: #3a5a40;
+    color: white;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 5px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.reservations-toggle-buttons button.active {
+    background-color: #344e41;
+}
+
+.reservations-toggle-buttons button:last-child {
+    margin-right: 0;
+}
+
+.reservations-list {
+    margin-top: 20px;
+    padding: 0;
+    list-style: none;
+}
+
+.reservations-list li {
+    margin-bottom: 15px;
+    padding: 10px;
+    background-color: #a3b18a;
+    border: 1px solid #344e41;
+    border-radius: 5px;
+}
+
+/* Notatki i akcje w rezerwacjach */
+.reservations-notes {
+    margin: 10px 0;
+}
+
+.reservations-notes textarea {
+    width: 100%;
+    height: 50px;
+    margin-bottom: 10px;
+}
+
+.reservations-notes-actions {
+    margin-top: 10px;
+    display: flex;
+    gap: 10px;
+}
+
+.user-panel-button.save {
+    background-color: #3a5a40;
+    color: white;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.user-panel-button.cancel {
+    background-color: #dc3545;
+    color: white;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+/* Inputy i walidacja */
+.user-panel-label {
+    display: block;
+    margin: 5px 0;
+}
+
+.user-panel-input {
+    width: 30%;
+    padding: 8px;
+    border: 1px solid #344e41;
+    border-radius: 5px;
+}
+
+.user-panel-input.error {
+    border: 1px solid #dc3545;
+}
+
+.validation-error {
+    color: #e61414;
+    font-size: 0.9em;
+    margin-top: 5px;
+    text-shadow: 
+        1px 1px 0 #000,
+        -1px -1px 0 #000,
+        -1px 1px 0 #000,
+        1px -1px 0 #000;
+}
+
+/* Stylowanie dla pustych danych */
+.no-reservations {
+    color: #666;
+    font-style: italic;
+}
+
+/* Przyciski w rezerwacjach */
+.user-panel-button.edit {
+    background-color: #3a5a40;
+    color: white;
+}
+
+.user-panel-button.edit:hover,
+.user-panel-button.save:hover,
+.user-panel-button.cancel:hover {
+    opacity: 0.9;
+}
+
+/* Scrollowanie listy rezerwacji */
+.reservations-list {
+    max-height: 370px;
+    overflow-y: scroll;
+}
+
+.button-group {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+    align-items: center;
+}
+
+/* Responsywność */
+@media (max-width: 768px) {
+    .user-panel-card {
+        flex-direction: column;
+    }
+
+    .user-data-section,
+    .reservations-section {
+        width: 86%;
+    }
+
+    .user-panel-input {
+        width: 60%;
+    }
+}
+
+.reservations-header {
+    text-align: center;
+    margin-bottom: 15px;
+}

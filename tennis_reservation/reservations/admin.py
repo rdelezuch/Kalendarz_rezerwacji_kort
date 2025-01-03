@@ -4,17 +4,16 @@ from .models import Reservation
 class ReservationAdmin(admin.ModelAdmin):
     list_display = ('id', 'court', 'start_time', 'end_time', 'get_user_email', 'get_user_first_name', 'get_user_last_name')
     
-    # Definiowanie metod pomocniczych dla pól użytkownika
     def get_user_email(self, obj):
-        return obj.user.email  # Pobieranie emaila użytkownika
+        return obj.user.email
     
     def get_user_first_name(self, obj):
-        return obj.user.first_name  # Pobieranie imienia użytkownika
+        return obj.user.first_name
     
     def get_user_last_name(self, obj):
-        return obj.user.last_name  # Pobieranie nazwiska użytkownika
+        return obj.user.last_name
     
-    # Ustawianie nagłówków dla tych kolumn
+    # Ustawianie nagłówków
     get_user_email.short_description = 'Email'
     get_user_first_name.short_description = 'Imię'
     get_user_last_name.short_description = 'Nazwisko'

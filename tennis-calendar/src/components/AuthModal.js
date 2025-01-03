@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import Modal from "react-modal";
 import axios from "axios";
 import { useAuth } from "./AuthContext";
+import "./AuthModal.css";
 
 const AuthModal = () => {
     const [formData, setFormData] = useState({
@@ -44,7 +45,6 @@ const AuthModal = () => {
         const { name, value } = e.target;
         setFormData({ ...formData, [name]: value });
 
-        // Walidacja pola
         const error = validateField(name, value);
         setErrors({ ...errors, [name]: error });
     };
@@ -52,7 +52,6 @@ const AuthModal = () => {
     const handleSubmit = (e) => {
         e.preventDefault();
         if (isLogin) {
-            // Logowanie
             axios
                 .post("http://127.0.0.1:8000/api/token/", {
                     email: formData.email,
@@ -62,16 +61,16 @@ const AuthModal = () => {
                     localStorage.setItem("access_token", response.data.access);
                     localStorage.setItem("refresh_token", response.data.refresh);
                     localStorage.setItem("user_email", formData.email);
-                    login(); // Zaktualizuj stan logowania w kontekście
+                    login();
                     alert("Zalogowano pomyślnie!");
-                    closeAuthModal(); // Zamknij modal
+                    closeAuthModal();
+                    window.location.reload();
                 })
                 .catch((error) => {
                     console.error("Błąd logowania:", error);
                     alert("Błędne dane logowania!");
                 });
         } else {
-            // Rejestracja
             if (formData.password !== formData.confirmPassword) {
                 alert("Hasła muszą być takie same!");
                 return;
@@ -107,6 +106,7 @@ const AuthModal = () => {
             isOpen={isAuthModalOpen}
             onRequestClose={closeAuthModal}
             ariaHideApp={false}
+            className="modal"
         >
             <h2>{isLogin ? "Logowanie" : "Rejestracja"}</h2>
             <form onSubmit={handleSubmit}>
@@ -121,12 +121,8 @@ const AuthModal = () => {
                                 onChange={handleInputChange}
                                 required
                             />
-                            {errors.firstName && (
-                                <p style={{ color: "red", fontSize: "14px" }}>
-                                    {errors.firstName}
-                                </p>
-                            )}
-                        </label><br/>
+                            {errors.firstName && <p>{errors.firstName}</p>}
+                        </label>
                         <label>
                             Nazwisko:
                             <input
@@ -136,12 +132,8 @@ const AuthModal = () => {
                                 onChange={handleInputChange}
                                 required
                             />
-                            {errors.lastName && (
-                                <p style={{ color: "red", fontSize: "14px" }}>
-                                    {errors.lastName}
-                                </p>
-                            )}
-                        </label><br/>
+                            {errors.lastName && <p>{errors.lastName}</p>}
+                        </label>
                         <label>
                             Telefon:
                             <input
@@ -153,7 +145,7 @@ const AuthModal = () => {
                                 title="Numer telefonu musi być w formacie: '123456789' lub '+48123456789'"
                                 required
                             />
-                        </label><br/>
+                        </label>
                     </>
                 )}
                 <label>
@@ -165,7 +157,7 @@ const AuthModal = () => {
                         onChange={handleInputChange}
                         required
                     />
-                </label><br/>
+                </label>
                 <label>
                     Hasło:
                     <input
@@ -175,7 +167,7 @@ const AuthModal = () => {
                         onChange={handleInputChange}
                         required
                     />
-                </label><br/>
+                </label>
                 {!isLogin && (
                     <>
                         <label>
@@ -187,8 +179,8 @@ const AuthModal = () => {
                                 onChange={handleInputChange}
                                 required
                             />
-                        </label><br/>
-                        <label>
+                        </label>
+                        <div className="checkbox-container">
                             <input
                                 type="checkbox"
                                 name="agreement"
@@ -196,13 +188,17 @@ const AuthModal = () => {
                                 onChange={handleInputChange}
                                 required
                             />
-                            Akceptuję regulamin oraz zgodę na RODO
-                        </label>
+                            <label>
+                                Akceptuję regulamin oraz zgodę na RODO
+                            </label>
+                        </div>
                     </>
                 )}
-                <br/><button type="submit">{isLogin ? "Zaloguj się" : "Zarejestruj się"}</button>
+                <div className="button-group">
+                    <button type="submit">{isLogin ? "Zaloguj się" : "Zarejestruj się"}</button>
+                    <button type="button" onClick={closeAuthModal}>Anuluj</button>
+                </div>
             </form>
-            <button onClick={closeAuthModal}>Anuluj</button>
         </Modal>
     );
 };

@@ -6,11 +6,57 @@
 }
 
 .fc-event {
-    display: flex;          /* Ustawienie flexbox */
-    justify-content: center; /* Wyśrodkowanie poziome */
-    align-items: center;    /* Wyśrodkowanie pionowe */
-    text-align: center;     /* Dodatkowe wyśrodkowanie tekstu */
-    font-size: 1em;         /* Dopasowanie rozmiaru czcionki */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    font-size: 1em;
+    padding: 4px;
+    white-space: normal;
+}
+
+.fc-toolbar {
+    background-color: #a3b18a;
+}
+
+.fc .fc-button {
+    background-color: #3a5a40 !important;
+    color: #ffffff !important;
+    border: 1px solid #588157 !important;
+}
+
+.fc .fc-button:hover {
+    background-color: #344e41 !important;
+    color: #ffffff !important;
+    border-color: #344e41 !important;
+}
+
+.fc .fc-button.fc-button-active {
+    background-color: #588157 !important;
+    color: #ffffff !important;
+    border-color: #588157 !important;
+}
+
+.fc-toolbar .fc-button.active-button {
+    background-color: #588157 !important;
+    color: white !important;
+    border-color: #588157 !important;
+}
+
+@media (max-width: 768px) {
+    .fc-toolbar {
+        flex-direction: column !important;
+    }
+
+    .fc-event {
+        font-size: 0.9em;
+    }
+
+    .fc-toolbar .fc-button {
+        font-size: 12px;
+        padding: 6px 8px;
+        border-radius: 3px;
+    }
 }
 
 .fc-daygrid-event {
@@ -33,22 +79,16 @@
     font-weight: bold !important;
 }
 
-/* Klasa dla zajętych godzin (czerwone tło) */
+/* Klasa dla zajętych godzin) */
 .event-occupied {
-    background-color: rgb(243, 74, 74) !important;
+    background-color: #344e41;
     color: white;
-    text-align: center;
-    border-radius: 4px;
-    border-color: rgb(243, 74, 74) !important;
 }
 
-/* Klasa dla dostępnych godzin (zielone tło) */
+/* Klasa dla dostępnych godzin */
 .event-available {
-    background-color: rgb(41, 141, 41) !important;
+    background-color: #588157; /* Dostępne */
     color: white;
-    text-align: center;
-    border-radius: 4px;
-    border-color: rgb(41, 141, 41) !important;
 }
 
 .fc-daygrid-event-dot {
@@ -58,4 +98,201 @@
 
 .active-button {
     background-color: #1a252f !important;
+    color: white !important;
+    border: none;
+    border-radius: 5px;
+}
+
+.active-button:hover {
+    opacity: 0.8;
+}
+
+/* Modal dla rezerwacji i szczegółów administratora */
+.react-modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background-color: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    max-width: 500px;
+    width: 100%;
+    z-index: 1000;
+}
+
+.react-modal h3 {
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.react-modal form label {
+    display: block;
+    margin-bottom: 10px;
+}
+
+.react-modal textarea {
+    width: 100%;
+    height: 80px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+    padding: 8px;
+}
+
+.react-modal button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    margin-right: 10px;
+    cursor: pointer;
+}
+
+.react-modal button[type="submit"] {
+    background-color: #28a745;
+    color: white;
+}
+
+.delete-reservation-btn {
+    background-color: #dc3545;
+    color: white;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    margin-top: 5px;
+}
+
+.add-reservation-admin-btn:hover,
+.delete-reservation-btn:hover {
+    opacity: 0.9;
+}
+
+.add-reservation-admin-btn {
+    background-color: #3a5a40;
+    color: white;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    justify-content: center;
+}
+
+.new-reservation-button-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+.reservation-divider {
+    border-top: 1px solid #344e41;
+    margin: 10px 0;
+}
+
+.reservation-details-title {
+    text-align: center;
+    font-size: 24px;
+    margin-bottom: 20px;
+}
+
+/* Lista szczegółów administratora */
+.react-modal ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.react-modal ul li {
+    margin-bottom: 15px;
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 10px;
+}
+
+/* Styl głównego kontenera modala */
+.reservation-modal-container {
+    padding: 20px;
+    background-color: #dad7cd; /* Kolor tła */
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    font-family: Arial, sans-serif;
+    width: 88%;
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+/* Tytuł modala */
+.reservation-modal-title {
+    text-align: center;
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 20px;
+    color: #344e41;
+}
+
+/* Pole formularza */
+.reservation-modal-field {
+    margin-bottom: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 16px;
+}
+
+/* Etykieta i wartość */
+.reservation-modal-field label {
+    color: #344e41;
+    font-weight: bold;
+}
+
+.reservation-modal-field span {
+    color: #588157;
+}
+
+/* Inputy i selecty */
+.reservation-select,
+.reservation-textarea {
+    width: 60%;
+    padding: 8px;
+    border: 1px solid #588157;
+    border-radius: 5px;
+    font-size: 14px;
+    background-color: #a3b18a;
+    color: #344e41;
+}
+
+.reservation-textarea {
+    resize: none;
+    height: 50px;
+}
+
+/* Styl przycisków */
+.reservation-modal-actions {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
+}
+
+.reservation-modal-button {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.reservation-modal-button.confirm {
+    background-color: #3a5a40;
+    color: white;
+}
+
+.reservation-modal-button.cancel {
+    background-color: #dc3545;
+    color: white;
+}
+
+.reservation-modal-button:hover {
+    opacity: 0.9;
 }

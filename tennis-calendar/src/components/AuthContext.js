@@ -5,21 +5,22 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
     const [isAuthenticated, setIsAuthenticated] = useState(!!localStorage.getItem("access_token"));
     const [isAuthModalOpen, setAuthModalOpen] = useState(false);
-    const [authMode, setAuthMode] = useState("login"); // "login" lub "register"
+    const [authMode, setAuthMode] = useState("login");
 
     const login = () => {
         setIsAuthenticated(true);
-        setAuthModalOpen(false); // Zamknięcie modala po zalogowaniu
+        setAuthModalOpen(false);
     };
 
-    const logout = () => {
+    const logout = (navigate) => {
         localStorage.removeItem("access_token");
         localStorage.removeItem("refresh_token");
         setIsAuthenticated(false);
+        navigate("/");
     };
 
     const openAuthModal = (mode = "login") => {
-        setAuthMode(mode); // Ustaw tryb logowania lub rejestracji
+        setAuthMode(mode);
         setAuthModalOpen(true);
     };
 
