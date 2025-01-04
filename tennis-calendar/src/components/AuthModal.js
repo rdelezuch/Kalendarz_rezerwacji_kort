@@ -29,7 +29,7 @@ const AuthModal = () => {
     }, [authMode, isAuthModalOpen]);
 
     const validateField = (name, value) => {
-        const namePattern = /^[A-Za-zÀ-ÿ\s-]+$/;
+        const namePattern = /^[A-Za-zĄĆĘŁŃÓŚŹŻąćęłńóśźż\s-]+$/;
 
         if (value === "") {
             return "";

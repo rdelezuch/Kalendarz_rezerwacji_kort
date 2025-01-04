@@ -17,4 +17,4 @@ class Reservation(models.Model):
     notes = models.CharField(max_length=150, blank=True, null=True)
 
     def __str__(self):
-        return f"Rezerwacja - Kort {self.court}"
+        return f"Rezerwacja - {self.user} - Kort {self.court}"
