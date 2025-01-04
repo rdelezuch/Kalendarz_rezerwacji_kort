@@ -21,7 +21,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/4.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-k=#fszrp#58igt3y-sg+lz2abasngp^5-x606#56_&cq6v+%1f'
+#SECRET_KEY =
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -154,7 +154,7 @@ EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_HOST_USER = 'tenisrezerwacja@gmail.com'
-EMAIL_HOST_PASSWORD = 'hlix pkke givl xxuo'
+EMAIL_HOST_PASSWORD = ''
 
 # Niestandardowy model użytkownika
 AUTH_USER_MODEL = 'accounts.CustomUser'
